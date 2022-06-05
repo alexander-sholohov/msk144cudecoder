@@ -5,8 +5,8 @@ This is CUDA-based MSK144 signal decoder. It accepts input samples in Audio or I
 Up to six frames averages are used to find a message in a deep noise.
 
 
-Audio input format: Mono, 16 bits, signed, 12000 samples per second.
-IQ input format: 8 bits per I/Q, signed(0x80=-128, 0x7f=+127), 12000 samples per second. .
+Audio input format: Mono, 16 bits, signed, 12000 samples per second.  
+IQ input format: 8 bits per I/Q, signed(0x80=-128, 0x7f=+127), 12000 samples per second.
 
 Tested on: GTX 730, GTX 1070, NVIDIA Jetson Nano. It should work on any modern NVIDIA GPUs. 
 
