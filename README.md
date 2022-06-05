@@ -1,6 +1,7 @@
 ### MSK144 CUDA Stream Decoder.
 
 **What is it:**
+
 This is CUDA-based MSK144 signal decoder. It accepts input samples in Audio or IQ forms at *stdin*, performs decoding and in case of a message present it prints the result to *stdout*. The algorithm uses GPU power to find the sync pattern and transform the samples into 144 softbits. At the final stage, a couple of original CPU-based WSJT Fortran functions are used to decode softbits into text message.  
 Up to six frames averages are used to find a message in a deep noise.
 
