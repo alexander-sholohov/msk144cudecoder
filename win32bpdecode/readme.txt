@@ -22,6 +22,7 @@ Change current dir to project root.
 mkdir _build_bpdecode
 cd _build_bpdecode
 cmake ../win32bpdecode
+cmake --build .
 ```
 
 Copy bpdecode.dll to the place where msk144cudecoder.exe will be running.

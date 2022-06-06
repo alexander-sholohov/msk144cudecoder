@@ -63,7 +63,7 @@ Deep scan. More resources usage. Scan in width of 300Hz, up to 6 frames average,
 
 Full example. Getting IQ stream from rtl_sdr:
 ```shell
-rtl_sdr -s 1920000 -f 144361500 -g 20 - | csdr convert_u8_f  | csdr fir_decimate_cc 8  | csdr fir_decimate_cc 5 | csdr fir_decimate_cc 4 | csdr fastdcblock_ff | csdr gain_ff 100.0 | csdr convert_f_s8 | ./msk144cudecoder --search-width=100 --read-mode=2 --scan-depth=3
+rtl_sdr -s 1920000 -f 144361500 -g 20 - | csdr convert_u8_f  | csdr fir_decimate_cc 8  | csdr fir_decimate_cc 5 | csdr fir_decimate_cc 4 | csdr gain_ff 100.0 | csdr convert_f_s8 | ./msk144cudecoder --search-width=100 --read-mode=2 --scan-depth=3
 ```
 
 
