@@ -182,7 +182,7 @@ __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restri
 
     // at now softbits buffer has 144 elements. QIQIQIQIQ.....
 
-    // calculate scale factor to normalize softbits
+    // calculate scale factor to normalize softbits (part of msk144decodeframe.f90)
     float loc_sav = 0.0f;
     float loc_s2av = 0.0f;
     if(threadIdx.x < 144)
@@ -243,8 +243,7 @@ __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restri
         // only the first thread will do the job of storing result.
         if(threadIdx.x == 0)
         {
-            ctx.resultKeeper().put_softbits(blockIdx.x, pattern_idx, candidate_num, nbadsync, softbits);
-            ctx.resultKeeper().put_softbits_wo_sync(blockIdx.x, pattern_idx, candidate_num, softbits_wo_sync);
+            ctx.resultKeeper().put_softbits(blockIdx.x, pattern_idx, candidate_num, nbadsync, softbits_wo_sync);
         }
     }
 

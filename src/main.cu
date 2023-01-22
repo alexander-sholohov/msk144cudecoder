@@ -443,7 +443,7 @@ int main(int argc, char* const argv[])
 
 #if 1
                 // Sync present. Try to decode entire message.
-                std::vector<float> sb(item.softbits, item.softbits + NumberOfSoftBits);
+                std::vector<float> sb(item.softbits_wo_sync, item.softbits_wo_sync + NumberOfSoftBitsWithoutSync);
                 auto res = decode_softbits(sb);
 #endif
 #if 0

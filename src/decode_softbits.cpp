@@ -23,37 +23,22 @@ DecodeResult::DecodeResult(std::string msg, int iter)
 
 DecodeResult decode_softbits(const std::vector<float> const& softbits)
 {
-    const size_t softbits_size = 144;
+    const size_t softbits_size = 128;
     if(softbits.size() != softbits_size)
     {
-        throw std::runtime_error("softbits[] must have size of 144 elements.");
+        throw std::runtime_error("softbits[] must have size of 128 elements.");
     }
 
     // The following code is a part of msk144decodeframe.f90
 
-    float sum_sav = std::accumulate(softbits.begin(), softbits.end(), 0.0f, [](float acc, float x) { return acc + x; });
-    float sum_s2av = std::accumulate(softbits.begin(), softbits.end(), 0.0f, [](float acc, float x) { return acc + x * x; });
-
-    float sav = sum_sav / softbits_size;
-    float s2av = sum_s2av / softbits_size;
-    float ssig = std::sqrt(s2av - sav * sav);
-
-    std::vector<float> normalized_softbits(softbits_size);
-    std::transform(softbits.begin(), softbits.end(), normalized_softbits.begin(), [ssig](float x) { return x / ssig; });
-
-    std::vector<float> llr(128);
-    // copy without sync. schema: 8+48+8+80=144, where 8 - sync.
-    std::copy(normalized_softbits.begin() + 8, normalized_softbits.begin() + 8 + 48, llr.begin());
-    std::copy(normalized_softbits.begin() + 8 + 48 + 8, normalized_softbits.end(), llr.begin() + 48);
-    const float sigma = 0.60f;
-    std::transform(llr.begin(), llr.end(), llr.begin(), [sigma](float x) { return 2.0f * x / (sigma * sigma); });
-
     std::vector<char> apmask(128, 0);
-    int maxiterations = 10; // 10 was
+    int maxiterations = 10;
     std::vector<char> message77(77);
     char cw[128];
     int nharderror = 0;
     int iter = 0;
+
+    std::vector<float> llr = softbits;
 
     fortran_bpdecode128_90(&llr[0], &apmask[0], &maxiterations, &message77[0], cw, &nharderror, &iter);
 
