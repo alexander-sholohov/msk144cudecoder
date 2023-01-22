@@ -101,52 +101,10 @@ public:
         }
     }
 
-    //__device__ const float* get_softbits(unsigned blk_id, unsigned pattern_idx, unsigned candidate_num) const
-    //{
-    //    ResultItem& item = get_result_item_by_block_coordinates(blk_id, pattern_idx, candidate_num);
-    //    return item.softbits_wo_sync;
-    //}
-
-    __device__ const float* get_filtered_softbits(unsigned blk_id) const
-    {
-        const unsigned* index_buf = thrust::raw_pointer_cast(_filtered_candidate_index);
-        const unsigned real_index = index_buf[blk_id];
-
-        const ResultItem* items_buf = thrust::raw_pointer_cast(_result_items);
-        return items_buf[real_index].softbits_wo_sync;
-    }
-
-    __device__ void put_ldpc_decode_result(unsigned blk_id, const char* message, int num_iterations, int num_hard_errors)
-    {
-        const unsigned* index_buf = thrust::raw_pointer_cast(_filtered_candidate_index);
-        const unsigned real_index = index_buf[blk_id];
-
-        ResultItem* items_buf = thrust::raw_pointer_cast(_result_items);
-
-        ResultItem& item = items_buf[real_index];
-        item.is_message_present = true;
-        item.ldpc_num_iterations = num_iterations;
-        item.ldpc_num_hard_errors = num_hard_errors;
-        for(unsigned idx = 0; idx < NumberOfMessageBits; idx++)
-        {
-            item.message[idx] = message[idx];
-        }
-    }
-
     __device__ unsigned get_pos_for_candidate(unsigned blk_id, unsigned pattern_idx, unsigned candidate_num) const
     {
         ResultItem& item = get_result_item_by_block_coordinates(blk_id, pattern_idx, candidate_num);
         return item.pos;
-    }
-
-    __host__ ResultItem get_result_item_by_index(const unsigned idx) const
-    {
-        assert(idx < _total_items);
-
-        ResultItem res;
-        thrust::copy(_result_items + idx, _result_items + (idx + 1), &res);
-
-        return res;
     }
 
     __host__ thrust::host_vector<ResultItem> get_all_results() const
@@ -162,7 +120,6 @@ public:
         thrust::host_vector<ResultItem> res(_total_items);
         thrust::copy(_result_items, _result_items + _total_items, &res[0]);
 
-
         thrust::host_vector<unsigned> indexes;
 
         for(unsigned idx=0; idx < _total_items; idx++)
@@ -174,6 +131,33 @@ public:
         }
         _num_filtered_candidates = indexes.size();
         thrust::copy(indexes.begin(), indexes.end(), _filtered_candidate_index);
+    }
+
+    __device__ ResultItem& get_result_item_by_filtered_index(unsigned blk_id) const
+    {
+        const unsigned* index_buf = thrust::raw_pointer_cast(_filtered_candidate_index);
+        const unsigned real_index = index_buf[blk_id];
+
+        ResultItem* items_buf = thrust::raw_pointer_cast(_result_items);
+        return items_buf[real_index];
+    }
+
+    __device__ const float* get_softbits_by_filtered_index(unsigned blk_id) const
+    {
+        ResultItem& item = get_result_item_by_filtered_index(blk_id);
+        return item.softbits_wo_sync;
+    }
+
+    __device__ void put_ldpc_decode_result(unsigned blk_id, const char* message, int num_iterations, int num_hard_errors)
+    {
+        ResultItem& item = get_result_item_by_filtered_index(blk_id);
+        item.is_message_present = true;
+        item.ldpc_num_iterations = num_iterations;
+        item.ldpc_num_hard_errors = num_hard_errors;
+        for(unsigned idx = 0; idx < NumberOfMessageBits; idx++)
+        {
+            item.message[idx] = message[idx];
+        }
     }
 
     __host__ dim3 getSoftBitsBlocks() const { return dim3(_num_blocks, _scan_depth * NumCandidatesPerPattern); }

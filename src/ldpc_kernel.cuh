@@ -105,7 +105,7 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
     __shared__ uint16_t crc_table[256];
     __shared__ unsigned char crc_buf[16];
     
-    const float* softbits = ctx.resultKeeper().get_filtered_softbits(blockIdx.x);
+    const float* softbits = ctx.resultKeeper().get_softbits_by_filtered_index(blockIdx.x);
 #if 0
     if(blockIdx.x == 118)
     {
