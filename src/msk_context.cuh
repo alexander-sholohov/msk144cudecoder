@@ -8,6 +8,8 @@
 
 #include "pattern_item.h"
 #include "result_keeper.cuh"
+#include "ldpc_context.cuh"
+
 #include <math_constants.h>
 
 __constant__ Complex _cb42[42];
@@ -32,6 +34,7 @@ public:
 
         init(center_freq, search_width, search_step);
         _result_keeper.init(_number_of_blocks, _scan_depth);
+        _ldpc_context.init();
     }
 
     MSK144SearchContext(const MSK144SearchContext& other)
@@ -44,6 +47,7 @@ public:
         , _scan_depth(other._scan_depth)
         , _nbadsync_threshold(other._nbadsync_threshold)
         , _result_keeper(other._result_keeper)
+        , _ldpc_context(other._ldpc_context)
     {
         ++*_shared_count;
     }
@@ -69,6 +73,7 @@ public:
         _scan_depth = other._scan_depth;
         _nbadsync_threshold = other._nbadsync_threshold;
         _result_keeper = other._result_keeper;
+        _ldpc_context = other._ldpc_context;
 
         return *this;
     }
@@ -111,6 +116,7 @@ private:
     {
         // std::cout << "in MSK144SearchContext::deinit\n";
         _result_keeper.deinit();
+        _ldpc_context.deinit();
     }
 
 public:
@@ -148,6 +154,8 @@ public:
     }
 
     __device__ __host__ ResultKeeper& resultKeeper() { return _result_keeper; }
+    
+    __device__ __host__ LDPCContext const& ldpcContext() const { return _ldpc_context; }
 
     __device__ __host__ int scanDepth() const { return _scan_depth; }
 
@@ -163,6 +171,7 @@ private:
     int _scan_depth;
     int _nbadsync_threshold;
     ResultKeeper _result_keeper;
+    LDPCContext _ldpc_context;
 
     __host__ void make_msk_sync42()
     {

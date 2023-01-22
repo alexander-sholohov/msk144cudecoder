@@ -14,13 +14,14 @@
 #include <numeric>
 #include <stdexcept>
 
-DecodeResult::DecodeResult(std::string msg)
+DecodeResult::DecodeResult(std::string msg, int iter)
     : m_found(true)
+    , m_iter(iter)
     , m_message(std::move(msg))
 {
 }
 
-DecodeResult decode_softbits(const std::vector<float>& softbits)
+DecodeResult decode_softbits(const std::vector<float> const& softbits)
 {
     const size_t softbits_size = 144;
     if(softbits.size() != softbits_size)
@@ -48,7 +49,7 @@ DecodeResult decode_softbits(const std::vector<float>& softbits)
     std::transform(llr.begin(), llr.end(), llr.begin(), [sigma](float x) { return 2.0f * x / (sigma * sigma); });
 
     std::vector<char> apmask(128, 0);
-    int maxiterations = 10;
+    int maxiterations = 10; // 10 was
     std::vector<char> message77(77);
     char cw[128];
     int nharderror = 0;
@@ -60,12 +61,16 @@ DecodeResult decode_softbits(const std::vector<float>& softbits)
     if(nharderror < 0 || nharderror >= 18)
         return DecodeResult();
 
-    // second check for error
-    auto bits2int = [](char b2, char b1, char b0) -> int { return (b2 << 2) | (b1 << 1) | (b0); };
-    int n3 = bits2int(message77[72], message77[73], message77[74]);
-    int i3 = bits2int(message77[75], message77[76], message77[76]);
+    return decode_message(message77);
+}
 
-    if((i3 == 0 && (n3 == 1 || n3 == 3 || n3 == 4 || n3 > 5)) || i3 == 3 || i3 == 4)
+DecodeResult decode_message(const std::vector<char> const& message77)
+{
+    auto bits2int = [](char b2, char b1, char b0) -> int { return (b2 << 2) | (b1 << 1) | (b0); };
+    int n3 = bits2int(message77[71], message77[72], message77[73]);
+    int i3 = bits2int(message77[74], message77[75], message77[76]);
+
+    if((i3 == 0 && (n3 == 1 || n3 == 3 || n3 == 4 || n3 > 5)) || i3 == 3 || i3 > 5)
         return DecodeResult();
 
     // rought checks passed. Next step - pass message77 to decoder
@@ -78,9 +83,9 @@ DecodeResult decode_softbits(const std::vector<float>& softbits)
     int unpk77_success = 0;
 
     fortran_unpack77(&c77[0], // 77
-                     &nrx,
-                     &msg[0], // 37
-                     &unpk77_success);
+        &nrx,
+        &msg[0], // 37
+        &unpk77_success);
 
     if(unpk77_success == 0)
         return DecodeResult();
@@ -90,5 +95,6 @@ DecodeResult decode_softbits(const std::vector<float>& softbits)
     size_t num_chars_to_cut = it - msg.rbegin();
     std::string res(msg.begin(), msg.begin() + msg.size() - num_chars_to_cut);
 
-    return DecodeResult(res);
+    return DecodeResult(res, 0);
+
 }

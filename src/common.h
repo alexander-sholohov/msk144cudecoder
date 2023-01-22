@@ -23,6 +23,10 @@ constexpr unsigned FirstHardbitsSyncBase = 0;
 constexpr unsigned SecondHardbitsSyncBase = (8 + 48);
 
 constexpr unsigned NumberOfSoftBits = 144;
+constexpr unsigned NumberOfSoftBitsWithoutSync = 128;
+constexpr unsigned NumberOfMessageBits = 77;
+
+constexpr unsigned NumberOfLDPCIterations = 10;
 
 constexpr unsigned NumScanThreads = 256; // must be power of two. 64, 128, 256, 512, 1024 are ok.
 #define NUM_SCAN_THREADS (256) // this is for conditional compilation due to lack of "if constexpr" support in Nvidia Jetson

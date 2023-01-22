@@ -15,6 +15,7 @@
 #include "analytic_fft.h"
 #include "analytic2.cuh"
 #include "softbits.cuh"
+#include "ldpc_kernel.cuh"
 
 #include "decode_softbits.h"
 #include "f_interop.h"
@@ -332,7 +333,13 @@ int main(int argc, char* const argv[])
             SimpleMetrics sm4("kernel");
 
             scan_candidates_kernel<<<blocks, threads>>>(ctx, device_input_data);
+            SimpleMetrics sm102("softbits_kernel");
             softbits_kernel<<<sbBlocks, sbThreads>>>(ctx, device_input_data);
+            sm102.stop();
+            
+            SimpleMetrics sm101("ldpc_kernel");
+            ldpc_kernel<<<sbBlocks, 128>>>(ctx);
+            sm101.stop();
             if(cudaDeviceSynchronize() != cudaSuccess)
             {
                 throw std::runtime_error("Cuda error: Failed to synchronize kernel..");
@@ -430,19 +437,25 @@ int main(int argc, char* const argv[])
             // When nbadsync in [0,1] - there is a probability to decode the message.
             // [2,3] - very rarely.
             // 4+ - almost never.
-            if(item.nbadsync <= ctx.getNBadSyncThreshold())
+            if(item.nbadsync <= ctx.getNBadSyncThreshold() /* item.is_message_present */)
             {
                 cnt_probes++;
 
+#if 1
                 // Sync present. Try to decode entire message.
                 std::vector<float> sb(item.softbits, item.softbits + NumberOfSoftBits);
-                std::string decoded_res;
                 auto res = decode_softbits(sb);
+#endif
+#if 0
+                std::vector<char> message77(item.message, item.message + NumberOfMessageBits);
+                auto res = decode_message(message77);
+                res.set_iter(item.ldpc_num_iterations);
+#endif 
+                
                 if(res.found())
                 {
                     cnt_decoded++;
-                    decoded_res = res.message();
-#if 0
+#if 1
                     std::cout << "D " << cnt_decoded << ": "
                         << " snr=" << std::setw(4) << snr_tracker.getSNRI()
                         << " idx=" << idx
@@ -452,6 +465,7 @@ int main(int argc, char* const argv[])
                         << " pos=" << std::setw(6) << item.pos
                         << " xb=" << std::setw(8) << item.xb
                         << " badsync=" << std::setw(4) << item.nbadsync
+                        << " iter=" << res.iter()
                         << " msg='" << res.message() << "'" << std::endl;
 #endif
                     result_filter.putMessage(snr_tracker.getSNRI(), item.f0, item.num_avg, item.nbadsync, item.pattern_idx, res.message());

@@ -4,6 +4,7 @@
 // License: MIT
 //
 
+#include "sum_reduction.cuh"
 
 __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restrict__  cdat)
 {
@@ -12,9 +13,11 @@ __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restri
     __shared__ Complex cdat2[Num6x864];
     __shared__ Complex cdat3[Num864];
     __shared__ Complex summ_reduction[Num42];
+    __shared__ float arr_reduction_helper[32];
 
     // When cdat3 calculated cdat2 is no more necessary and we can reuse it for softbits
     float* softbits = reinterpret_cast<float*>(cdat2);
+    float* softbits_wo_sync = softbits + 144;
 
     // reconstruct pattern_idx and candidate_num from block number dimension - y
     unsigned pattern_idx = blockIdx.y / NumCandidatesPerPattern;
@@ -173,10 +176,40 @@ __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restri
         {
             softbits[pos_iq * 2 + iq_selection] = sb; // QIQI...
         }
-        __syncthreads();
+        
     } // end of scope
+    __syncthreads();
 
     // at now softbits buffer has 144 elements. QIQIQIQIQ.....
+
+    // calculate scale factor to normalize softbits
+    float loc_sav = 0.0f;
+    float loc_s2av = 0.0f;
+    if(threadIdx.x < 144)
+    {
+        loc_sav = softbits[threadIdx.x];
+        loc_s2av = loc_sav * loc_sav;
+    }
+    const float sum_sav = sum_reduction_two_cycles(loc_sav, arr_reduction_helper);
+    const float sum_s2av = sum_reduction_two_cycles(loc_s2av, arr_reduction_helper);
+
+    const float sav = sum_sav / 144.0;
+    const float s2av = sum_s2av / 144.0;
+
+    const float ssig = sqrt(s2av - sav * sav);
+    const float sigma = 0.60f;
+    const float scale = 2.0f / (ssig * sigma * sigma);
+
+    // fill softbits_wo_sync 
+    if(threadIdx.x < 48)
+    {
+        softbits_wo_sync[threadIdx.x] = scale * softbits[8 + threadIdx.x];
+    }
+    if(threadIdx.x < 80)
+    {
+        softbits_wo_sync[48 + threadIdx.x] = scale * softbits[8 + 48 + 8 + threadIdx.x];
+    }
+    __syncthreads();
 
     if(threadIdx.x < 16)
     {
@@ -211,8 +244,8 @@ __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restri
         if(threadIdx.x == 0)
         {
             ctx.resultKeeper().put_softbits(blockIdx.x, pattern_idx, candidate_num, nbadsync, softbits);
+            ctx.resultKeeper().put_softbits_wo_sync(blockIdx.x, pattern_idx, candidate_num, softbits_wo_sync);
         }
     }
 
-    __syncthreads();
 }
