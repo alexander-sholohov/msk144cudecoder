@@ -33,7 +33,7 @@ public:
         // clang-format on
 
         init(center_freq, search_width, search_step);
-        _result_keeper.init(_number_of_blocks, _scan_depth);
+        _result_keeper.init(_number_of_blocks, _scan_depth, _nbadsync_threshold);
         _ldpc_context.init();
     }
 

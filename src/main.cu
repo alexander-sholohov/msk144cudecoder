@@ -337,8 +337,11 @@ int main(int argc, char* const argv[])
             softbits_kernel<<<sbBlocks, sbThreads>>>(ctx, device_input_data);
             sm102.stop();
             
+            ctx.resultKeeper().filter_candidates();
+            auto ldpcBlocks = ctx.resultKeeper().getFilteredCandidatesBlocks();
+            std::cout << "ldpcBlocks=" << ldpcBlocks.x << std::endl;
             SimpleMetrics sm101("ldpc_kernel");
-            ldpc_kernel<<<sbBlocks, 128>>>(ctx);
+            ldpc_kernel<<<ldpcBlocks, 128>>>(ctx);
             sm101.stop();
             if(cudaDeviceSynchronize() != cudaSuccess)
             {
@@ -437,16 +440,16 @@ int main(int argc, char* const argv[])
             // When nbadsync in [0,1] - there is a probability to decode the message.
             // [2,3] - very rarely.
             // 4+ - almost never.
-            if(item.nbadsync <= ctx.getNBadSyncThreshold() /* item.is_message_present */)
+            if(/*item.nbadsync <= ctx.getNBadSyncThreshold() */ item.is_message_present )
             {
                 cnt_probes++;
 
-#if 1
+#if 0
                 // Sync present. Try to decode entire message.
                 std::vector<float> sb(item.softbits_wo_sync, item.softbits_wo_sync + NumberOfSoftBitsWithoutSync);
                 auto res = decode_softbits(sb);
 #endif
-#if 0
+#if 1
                 std::vector<char> message77(item.message, item.message + NumberOfMessageBits);
                 auto res = decode_message(message77);
                 res.set_iter(item.ldpc_num_iterations);

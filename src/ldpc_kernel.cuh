@@ -104,18 +104,10 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
     __shared__ bool message_found;
     __shared__ uint16_t crc_table[256];
     __shared__ unsigned char crc_buf[16];
-
-    // reconstruct pattern_idx and candidate_num from block number dimension - y
-    const unsigned pattern_idx = blockIdx.y / NumCandidatesPerPattern;
-    const unsigned candidate_num = blockIdx.y % NumCandidatesPerPattern;
-
-    //int nbadsync = ctx.resultKeeper().get_nbadsync(blockIdx.x, pattern_idx, candidate_num);
-    //if(nbadsync > 5)
-    //  return;
-
-    const float* softbits = ctx.resultKeeper().get_softbits(blockIdx.x, pattern_idx, candidate_num);
+    
+    const float* softbits = ctx.resultKeeper().get_filtered_softbits(blockIdx.x);
 #if 0
-    if(blockIdx.x == 23 && pattern_idx ==0 && candidate_num == 3)
+    if(blockIdx.x == 118)
     {
         if(threadIdx.x == 0)
         {
@@ -251,7 +243,7 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
             // Only thread 0 saves the result.
             if(threadIdx.x == 0)
             {
-                ctx.resultKeeper().put_ldpc_decode_result(blockIdx.x, pattern_idx, candidate_num, cw, iter, num_hard_errors);
+                ctx.resultKeeper().put_ldpc_decode_result(blockIdx.x, cw, iter, num_hard_errors);
                 // printf("Message found. Exit.\n");
             }
 
