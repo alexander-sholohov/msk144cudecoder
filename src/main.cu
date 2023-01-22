@@ -14,7 +14,7 @@
 
 #include "analytic_fft.h"
 #include "analytic2.cuh"
-#include "softbits.cuh"
+#include "softbits_kernel.cuh"
 #include "ldpc_kernel.cuh"
 
 #include "decode_softbits.h"

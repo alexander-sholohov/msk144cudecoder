@@ -115,11 +115,14 @@ add_executable (msk144cudecoder
   src/gpu_timer.h
   src/msk_context.cuh
   src/result_keeper.cuh
+  src/sum_reduction.cuh
   src/scan_kernel.cuh 
-  src/softbits.cuh 
+  src/softbits_kernel.cuh 
   src/main.cu
   src/analytic_fft.h
   src/analytic_fft.cu
+  src/ldpc_kernel.cuh
+  src/ldpc_context.cuh
   src/analytic2.cuh
   src/decode_softbits.h
   src/decode_softbits.cpp
