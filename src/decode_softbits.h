@@ -23,5 +23,5 @@ private:
     std::string m_message{};
 };
 
-DecodedResult decode_softbits(const std::vector<float> const& softbits);
-DecodedResult decode_message(const std::vector<char> const& message);
+DecodedResult decode_softbits(std::vector<float> const& softbits);
+DecodedResult decode_message(std::vector<char> const& message);

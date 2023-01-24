@@ -20,7 +20,7 @@ DecodedResult::DecodedResult(std::string msg)
 {
 }
 
-DecodedResult decode_softbits(const std::vector<float> const& softbits)
+DecodedResult decode_softbits(const std::vector<float>& softbits)
 {
     const size_t softbits_size = 128;
     if(softbits.size() != softbits_size)
@@ -48,7 +48,7 @@ DecodedResult decode_softbits(const std::vector<float> const& softbits)
     return decode_message(message77);
 }
 
-DecodedResult decode_message(const std::vector<char> const& message77)
+DecodedResult decode_message(const std::vector<char>& message77)
 {
     auto bits2int = [](char b2, char b1, char b0) -> int { return (b2 << 2) | (b1 << 1) | (b0); };
     int n3 = bits2int(message77[71], message77[72], message77[73]);
