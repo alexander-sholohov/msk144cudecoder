@@ -349,7 +349,7 @@ int main(int argc, char* const argv[])
             {
                 const size_t half_len = Num6x864;
                 // copy second half to begin
-                memcpy(&iq2x8_buf[0], &real16_buf[half_len], half_len);
+                memcpy(&iq2x8_buf[0], &iq2x8_buf[half_len], half_len);
                 // read to second part
                 size_t rc = fread(&iq2x8_buf[half_len], sizeof(int8_t), half_len, stdin);
                 if(rc != half_len)
