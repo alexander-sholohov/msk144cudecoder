@@ -2,7 +2,7 @@
 
 **What is it:**
 
-This is CUDA-based MSK144 signal decoder. It accepts input samples in Audio or IQ forms at *stdin*, performs decoding and in case of a message present it prints the result to *stdout*. The algorithm uses GPU power to find the sync pattern and transform the samples into 144 softbits. At the final stage, a couple of original CPU-based WSJT Fortran functions are used to decode softbits into text message.  
+This is CUDA-based MSK144 signal decoder. It accepts input samples in Audio or IQ forms at *stdin*, performs decoding and in case of a message present it prints the result to *stdout*. The algorithm uses GPU power to find the sync pattern, transform the samples into 144 softbits and perform the LPDC decoding. At the final stage, one original CPU-based WSJT Fortran functions unpack77() is used to decode 77 bits into text message.  
 Up to six frames averages are used to find a message in a deep noise.
 
 
@@ -41,7 +41,7 @@ cmake --build .
 
 Executable file *msk144cudecoder* will appear in the current directory.
 
-Compilation Windows executable is a little bit tricky, see ./win32bpdecode/readme.txt for details.
+To run program this program on Windows you will need bpdecode.dll. How to build it see ./win32bpdecode/readme.txt
 
 
 **Run Examples:**

@@ -1,13 +1,4 @@
 
-The main project msk144cudecoder builds using MS Visual Studio 2019/2022 community edition. 
-As in the Linux case:
-```
-mkdir _build
-cd _build
-cmake --build .
-```
-
-However, gfortran based project bpdecode.dll has to be built in MinGW/MSYS2 environment.
 
 How to build bpdecode.dll for Windows using MSYS2 environment:
 
