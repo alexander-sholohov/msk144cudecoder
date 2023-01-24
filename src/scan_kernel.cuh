@@ -24,7 +24,7 @@ struct FindMaxInterWarpItem
     unsigned pos;
 };
 
-__global__ void scan_candidates_kernel(MSK144SearchContext ctx, const Complex* __restrict__  cdat)
+__global__ void scan_kernel(MSK144SearchContext ctx, const Complex* __restrict__  cdat)
 {
     GpuTimer t1;
     GpuTimer t2;

@@ -1,5 +1,12 @@
 #pragma once
 
+//
+// Author: Alexander Sholokhov <ra9yer@yahoo.com>
+//
+// License: MIT
+//
+
+
 // This function gathers values from all threads and calculates summ of them. 
 // It supports any number of threads but not more than 1024 (32 * 32 = 1024) and no less than 32.
 // Supported types: float, int.

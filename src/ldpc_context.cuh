@@ -1,3 +1,8 @@
+//
+// Author: Alexander Sholokhov <ra9yer@yahoo.com>
+//
+// License: MIT
+//
 
 
 #define POLY 0x15D7

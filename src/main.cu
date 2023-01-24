@@ -449,7 +449,7 @@ void do_decode(MSK144SearchContext& ctx, const Complex* device_input_data, Resul
 
     ctx.resultKeeper().clear_result();
 
-    scan_candidates_kernel<<<blocks, threads>>>(ctx, device_input_data);
+    scan_kernel<<<blocks, threads>>>(ctx, device_input_data);
     softbits_kernel<<<sbBlocks, sbThreads>>>(ctx, device_input_data);
 
     ctx.resultKeeper().filter_candidates();
