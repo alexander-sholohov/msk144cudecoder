@@ -36,5 +36,4 @@ public:
 private:
     std::vector<ResultItem> m_block_scope;
     std::vector<ResultItem> m_block_result;
-    // std::vector<ResultItem> m_longh_live;
 };

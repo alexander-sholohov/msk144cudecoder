@@ -6,7 +6,7 @@
 
 #include "common.h"
 
-constexpr float sc45 = 0.707106781f; // sin(45) = sq(2)/2 = 0.7071...
+constexpr float sc45 = 0.707106781f; // sin(45) = sqrt(2)/2 = 0.7071...
 
 template<unsigned int NumSlices, unsigned NumAnalyticThreads>
 __device__ void _frequency_shift_fs8_left(Complex* cdat)

@@ -5,11 +5,7 @@
 //
 
 
-#define POLY 0x15D7
-
-//struct LDPCMapItem {
-//  unsigned char map[3][2];
-//};
+#define CRC13_POLY 0x15D7
 
 
 const char ldpc_reverse_map[128][3][2] = { 
@@ -200,7 +196,7 @@ private:
     void gen_crc13_table(uint16_t* table)
     {
         const int LengthCRC = 13;
-        const uint16_t polynomial = POLY;
+        const uint16_t polynomial = CRC13_POLY;
         const uint16_t high_bit_mask = (1 << (LengthCRC - 1));
         const int N = 256;
 

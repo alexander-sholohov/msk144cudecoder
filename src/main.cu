@@ -129,6 +129,7 @@ int main(int argc, char* const argv[])
     int analytic_method = 2;
     int nbadsync_threshold = 1; // max reasonable value = 4
 
+    // clang-format off
     static struct option long_options[] = {{"help", no_argument, 0, 0},                     // 0
                                            {"center-frequency", required_argument, 0, 0},   // 1
                                            {"search-step", required_argument, 0, 0},        // 2
@@ -138,6 +139,7 @@ int main(int argc, char* const argv[])
                                            {"analytic-method", required_argument, 0, 0},    // 6
                                            {"nbadsync-threshold", required_argument, 0, 0}, // 7
                                            {0, 0, 0, 0}};
+    // clang-format on
 
     while(true)
     {
