@@ -55,14 +55,15 @@ void showHelp(const char* prog)
 {
     std::cout << "Calling conversion: " << prog << " {[--help] | <options> }" << std::endl;
     std::cout << " Where options are: " << std::endl;
-    std::cout << "                   --help\tShow this help and exit." << std::endl;
-    std::cout << "                   --center-frequency=1500.0 \tCenter frequency in Hz." << std::endl;
-    std::cout << "                   --search-step=2.0 \tSearch step in Hz. " << std::endl;
-    std::cout << "                   --search-width=100.0 \tWindow in Hz around center frequency to find msk144 signal in. The more Search Width the more GPU resources are needed."
-              << std::endl;
-    std::cout << "                   --scan-depth=[1..8] \tThe more depth the more averagable patterns will be tried. Default=3" << std::endl;
-    std::cout << "                   --read-mode=[1|2] \t1=Audio,16 bit, mono, 12000sps, 1500Hz-recommended center; 2=IQ,8 bit, 12000sps, 0Hz-center. Default mode = 1."
-              << std::endl;
+    std::cout << "                   --help                      Show this help and exit." << std::endl;
+    std::cout << "                   --center-frequency=1500.0   Center frequency in Hz." << std::endl;
+    std::cout << "                   --search-step=2.0           Search step in Hz. " << std::endl;
+    std::cout << "                   --search-width=100.0        Window in Hz around center frequency to find msk144 signal in. The more Search Width the more GPU resources are needed." << std::endl;
+    std::cout << "                   --scan-depth=[1..8]         The more depth the more averagable patterns will be tried. Default=3" << std::endl;
+    std::cout << "                   --read-mode=[1|2]           1=Audio,16 bit, mono, 12000sps, 1500Hz-recommended center; 2=IQ,8 bit, 12000sps, 0Hz-center. Default mode = 1." << std::endl;
+    std::cout << "                   --analytic-method=[1|2]     How to convert real signal to ananlytyc quadrature signal. 1 = FFT; 2 = Shift-left + LPF + Shift-right. Default=2." << std::endl;
+    std::cout << "                   --nbadsync-threshold=[1..4] Specifies how many errors in sync pattern are acceptable to be passed to LDPC decoder. Default=2." << std::endl;
+                  
     return;
 }
 
