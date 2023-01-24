@@ -145,7 +145,7 @@ void Analytic::execute(thrust::host_vector<Complex> const& in, size_t npts)
     }
 
     // Copy cuFloatComplex -> Complex.
-    // Probaly these types are the same at binary level, but I'm not sure this is valid for all platforms.
+    // Probably these types are the same at binary level, but I'm not sure this is valid for all platforms.
 
     thrust::host_vector<cuFloatComplex> res_arr_in = in_device; // copy from device to host
 

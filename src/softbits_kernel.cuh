@@ -23,7 +23,7 @@ __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restri
     unsigned pattern_idx = blockIdx.y / NumCandidatesPerPattern;
     unsigned candidate_num = blockIdx.y % NumCandidatesPerPattern;
 
-    // Get frequncy to shift on.
+    // Get frequency to shift on.
     const float f0 = -1 * ctx.getFrequencyForThread(blockIdx.x);
     Complex cb42_thr = _cb42[threadIdx.x % Num42];
 

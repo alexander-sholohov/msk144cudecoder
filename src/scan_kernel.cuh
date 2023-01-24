@@ -41,7 +41,7 @@ __global__ void scan_candidates_kernel(MSK144SearchContext ctx, const Complex* _
     t_total.Start();
     t1.Start();
 
-    // Get frequncy to shift on.
+    // Get frequency to shift on.
     const float f0 = -1 * ctx.getFrequencyForThread(blockIdx.x);
 
     // Decimation in parallel using N threads.
@@ -267,7 +267,7 @@ __global__ void scan_candidates_kernel(MSK144SearchContext ctx, const Complex* _
             }
 #endif
             static_assert(NumScanThreads <= 1024, "support of 1024+ threads is not implemented yet.");
-            // TODO: implement extra reduction level for 1024+ threads. Also best candidate selection should be reviwed.
+            // TODO: implement extra reduction level for 1024+ threads. Also best candidate selection should be reviewed.
 
             // at now xb_best, pos_best - the values we needed
             // Find worse item in best_candidates to replace by just found best item

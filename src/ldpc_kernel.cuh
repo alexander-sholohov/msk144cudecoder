@@ -1,4 +1,8 @@
-
+//
+// Author: Alexander Sholokhov <ra9yer@yahoo.com>
+//
+// License: MIT
+//
 
 #include "sum_reduction.cuh"
 
@@ -54,9 +58,6 @@ __device__ bool check_crc(unsigned char* byte_buf, const uint16_t* crc_table)
 
     const uint16_t calculated_crc = calc_crc13(byte_buf, 12, crc_table);
 
-    //printf("unaligned_crc_from_message=%04x\n", unaligned_crc_from_message);
-    //printf("crc_from_message=%02x\n", crc_from_message);
-    //printf("calculated_crc=%02x\n", calculated_crc);
     return crc_from_message == calculated_crc;
 }
 
@@ -90,7 +91,11 @@ __device__ float platanh(float x)
     return isign*7.0f;
 }
 
-
+//
+// The algorighm is taken from WSJT project. File name is bpdecode128_90.f90 . 
+// A log-domain belief propagation decoder for the (128,90) LDPC code.
+// It is adapted to be used by 128 parallel CUDA threads.
+//
 __global__ void ldpc_kernel(MSK144SearchContext ctx)
 {
     __shared__ char mp[128][3][2];
@@ -106,21 +111,6 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
     __shared__ unsigned char crc_buf[16];
     
     const float* softbits = ctx.resultKeeper().get_softbits_by_filtered_index(blockIdx.x);
-#if 0
-    if(blockIdx.x == 118)
-    {
-        if(threadIdx.x == 0)
-        {
-            printf("softbits: ");
-            for(int j=0;j<128;j++)
-            {
-                printf("%8.5f, ", softbits[j]);
-            }
-            printf("\n");
-        }
-
-    }
-#endif
 
     {
         // Copy CRC table from device memory to shared memory as it is faster.
@@ -141,7 +131,7 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
     }
 
     {
-        // Init is_full_row array
+        // Init 'is_full_row' array.
         const bool* full_row_table = ctx.ldpcContext().get_is_full_row();
         if(threadIdx.x < 38)
         {
@@ -165,26 +155,11 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
         chk_cw_toc[10][thr_idx] = 0;
     }
 
-    // Initial fill 'toc' array
-#if 0
-    for(int i=0; i< 3; i++)
-    {
-        toc[mp[thr_idx][i][0]][mp[thr_idx][i][1]] = softbits[thr_idx];
-    }
-#endif
-
     __syncthreads();
 
 
     for(unsigned iter=0; iter < NumberOfLDPCIterations; iter++)
     {
-#if 0
-        if(threadIdx.x == 0)
-        {
-            printf("iter=%d\n", iter);
-        }
-#endif
-
         // Update bit log likelihood ratios (tov=0 in iteration 0).
         float sum = 0.0f;
         for(size_t k=0;k<3;k++) { sum += tov[k][thr_idx]; }
@@ -231,12 +206,6 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
             message_found = is_crc_valid && num_hard_errors < 18;
         }
         __syncthreads();
-#if 0
-        if(threadIdx.x == 0)
-        {
-            printf("ncheck=%d is_crc_valid=%d, num_hard_error=%d iter=%d\n", ncheck, is_crc_valid, num_hard_errors, iter);
-        }
-#endif
 
         if(message_found)
         {
@@ -244,7 +213,6 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
             if(threadIdx.x == 0)
             {
                 ctx.resultKeeper().put_ldpc_decode_result(blockIdx.x, cw, iter, num_hard_errors);
-                // printf("Message found. Exit.\n");
             }
 
             return;
@@ -258,20 +226,6 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
         }
         __syncthreads();
 
-#if 0
-        if(threadIdx.x == 0)
-        {
-            for(int i=0;i<11;i++)
-            {
-                printf("toc[%2d]: ", i);
-                for(int j=0;j<38;j++)
-                {
-                    printf("%8.5f, ", toc[i][j]);
-                }
-                printf("\n");
-            }
-        }
-#endif
         // ----- send messages from check nodes to variable nodes
         for(int k=0; k < 3; k++)
         {
@@ -289,21 +243,6 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
             tov[k][thr_idx] = 2.0f * platanh(-product);
         }
         __syncthreads();
-
-#if 0
-        if(threadIdx.x == 0)
-        {
-            for(int i=0;i<128;i++)
-            {
-                printf("tov[%2d]: ", i);
-                for(int j=0;j<3;j++)
-                {
-                    printf("%8.5f, ", tov[j][i]);
-                }
-                printf("\n");
-            }
-        }
-#endif
 
     }
 }

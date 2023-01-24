@@ -121,7 +121,7 @@ template<unsigned TotalElements, unsigned NumSlices, unsigned NumAnalyticThreads
 __device__ void _lpf_convolution(Complex* cdat)
 {
     //
-    // This is how LPF coefficients was calcualted:
+    // This is how LPF coefficients was calculated:
     //
     // import scipy.signal as signal
     // numtaps = 15
@@ -194,7 +194,7 @@ __device__ void _lpf_convolution(Complex* cdat)
 #if 1
     // Apply this filter again for reverse ordered samples.
     // This will give us zero-phase shifting result for all frequency range.
-    // I'm not sure we really need zero-phase shifting, but appling the same filter twice is also good.
+    // I'm not sure if we really need zero-phase shifting, but applying the same filter twice is also good.
     for(int slice_no = 0; slice_no < NumSlices - 1; slice_no++)
     {
         const int long_idx = TotalElements - slice_no * NumAnalyticThreads - threadIdx.x - 1;
