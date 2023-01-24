@@ -14,13 +14,13 @@
 #include <numeric>
 #include <stdexcept>
 
-DecodeResult::DecodeResult(std::string msg)
+DecodedResult::DecodedResult(std::string msg)
     : m_found(true)
     , m_message(std::move(msg))
 {
 }
 
-DecodeResult decode_softbits(const std::vector<float> const& softbits)
+DecodedResult decode_softbits(const std::vector<float> const& softbits)
 {
     const size_t softbits_size = 128;
     if(softbits.size() != softbits_size)
@@ -43,19 +43,19 @@ DecodeResult decode_softbits(const std::vector<float> const& softbits)
 
     // first check for error
     if(nharderror < 0 || nharderror >= 18)
-        return DecodeResult();
+        return DecodedResult();
 
     return decode_message(message77);
 }
 
-DecodeResult decode_message(const std::vector<char> const& message77)
+DecodedResult decode_message(const std::vector<char> const& message77)
 {
     auto bits2int = [](char b2, char b1, char b0) -> int { return (b2 << 2) | (b1 << 1) | (b0); };
     int n3 = bits2int(message77[71], message77[72], message77[73]);
     int i3 = bits2int(message77[74], message77[75], message77[76]);
 
     if((i3 == 0 && (n3 == 1 || n3 == 3 || n3 == 4 || n3 > 5)) || i3 == 3 || i3 > 5)
-        return DecodeResult();
+        return DecodedResult();
 
     // rought checks passed. Next step - pass message77 to decoder
 
@@ -72,13 +72,13 @@ DecodeResult decode_message(const std::vector<char> const& message77)
         &unpk77_success);
 
     if(unpk77_success == 0)
-        return DecodeResult();
+        return DecodedResult();
 
     // trim right
     auto it = std::find_if(msg.rbegin(), msg.rend(), [](char x) { return x != ' '; });
     size_t num_chars_to_cut = it - msg.rbegin();
     std::string res(msg.begin(), msg.begin() + msg.size() - num_chars_to_cut);
 
-    return DecodeResult(res);
+    return DecodedResult(res);
 
 }

@@ -10,11 +10,11 @@
 #include <utility>
 #include <vector>
 
-class DecodeResult
+class DecodedResult
 {
 public:
-    DecodeResult() = default;
-    DecodeResult(std::string msg);
+    DecodedResult() = default;
+    DecodedResult(std::string msg);
     bool found() const { return m_found; }
     std::string const& message() const { return m_message; }
 
@@ -23,7 +23,5 @@ private:
     std::string m_message{};
 };
 
-DecodeResult decode_softbits(const std::vector<float> const& softbits);
-DecodeResult decode_message(const std::vector<char> const& message);
-
-void init_pbdecode_if_need();
+DecodedResult decode_softbits(const std::vector<float> const& softbits);
+DecodedResult decode_message(const std::vector<char> const& message);

@@ -434,7 +434,7 @@ void do_decode(MSK144SearchContext& ctx, const Complex* device_input_data, Resul
         }
     };
 
-    std::map<MessageItem, DecodeResult> decode_cache;
+    std::map<MessageItem, DecodedResult> decode_cache;
 
     SimpleMetrics sm1("do_decode");
 
