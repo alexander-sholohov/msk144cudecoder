@@ -85,7 +85,7 @@ static std::string input_mode_to_string(INPUT_MODE input_mode)
     }
     else
     {
-        res = "unknwon";
+        res = "unknown";
     }
 
     return res;
@@ -119,7 +119,7 @@ int main(int argc, char* const argv[])
 
     const float default_center_frequency_audio = 1500.0f;
     const float default_center_frequency_iq = 0.0f;
-    float center_frequncy_in_hz = 0.0f; // Will be overwritten.
+    float center_frequency_in_hz = 0.0f; // Will be overwritten.
     bool center_frequency_was_set = false;
 
     float search_step_in_hz = 2.0f;    // 2Hz is optimal.
@@ -155,7 +155,7 @@ int main(int argc, char* const argv[])
                 showHelp(argv[0]);
                 exit(0);
             case 1:
-                center_frequncy_in_hz = atof(optarg);
+                center_frequency_in_hz = atof(optarg);
                 center_frequency_was_set = true;
                 break;
             case 2:
@@ -188,11 +188,11 @@ int main(int argc, char* const argv[])
     {
         if(input_mode == INPUT_MODE::Real16bit)
         {
-            center_frequncy_in_hz = default_center_frequency_audio;
+            center_frequency_in_hz = default_center_frequency_audio;
         }
         else if(input_mode == INPUT_MODE::IQ8bits)
         {
-            center_frequncy_in_hz = default_center_frequency_iq;
+            center_frequency_in_hz = default_center_frequency_iq;
         }
         else
         {
@@ -217,7 +217,7 @@ int main(int argc, char* const argv[])
 
     Analytic analytic(NFFT);
 
-    MSK144SearchContext ctx(center_frequncy_in_hz, search_width_in_hz, search_step_in_hz, scan_depth, nbadsync_threshold);
+    MSK144SearchContext ctx(center_frequency_in_hz, search_width_in_hz, search_step_in_hz, scan_depth, nbadsync_threshold);
     const auto blocks = ctx.getBlocks();
     const auto threads = ctx.getThreads();
 
@@ -225,7 +225,7 @@ int main(int argc, char* const argv[])
     const auto sbThreads = ctx.getSoftBitsThreads();
 
     std::cout << "Actual parameters:" << std::endl
-              << "Center Frequency: " << center_frequncy_in_hz << "Hz" << std::endl
+              << "Center Frequency: " << center_frequency_in_hz << "Hz" << std::endl
               << "Search Step: " << search_step_in_hz << "Hz" << std::endl
               << "Search Width: " << search_width_in_hz << "Hz" << std::endl
               << "Scan Depth: " << ctx.scanDepth() << std::endl

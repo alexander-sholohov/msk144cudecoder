@@ -251,7 +251,7 @@ __global__ void apply_shift_filter_shift(const Complex* __restrict__ input, Comp
     __shared__ Complex cdat[TotalElements];
     static_assert(sizeof(cdat) <= 48 * 1024, "Not enough of shared memory");
 
-    // Do nothing and retun if the kernel was called with wrong argument.
+    // Do nothing and return if the kernel was called with wrong argument.
     if(NumAnalyticThreads != blockDim.x)
         return;
 
@@ -277,7 +277,7 @@ __global__ void apply_filter(const Complex* __restrict__ input, Complex* result)
     __shared__ Complex cdat[TotalElements];
     static_assert(sizeof(cdat) <= 48 * 1024, "Not enough of shared memory");
 
-    // Do nothing and retun if the kernel was called with wrong argument.
+    // Do nothing and return if the kernel was called with wrong argument.
     if(NumAnalyticThreads != blockDim.x)
         return;
 
