@@ -15,7 +15,7 @@ SNRTracker::SNRTracker()
 {
 }
 
-void SNRTracker::process_data(const Complex const* data, const unsigned length)
+void SNRTracker::process_data(const Complex* data, const unsigned length)
 {
     //assert(data.size() >= length);
 
