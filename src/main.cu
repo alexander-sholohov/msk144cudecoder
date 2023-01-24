@@ -33,6 +33,7 @@
 #include <iomanip>
 #include <iostream>
 #include <thread>
+#include <map>
 
 #ifdef _MSC_VER
 #define __GNU_LIBRARY__ // win32 getopt specific
@@ -47,6 +48,8 @@
 #else
 #define SET_BINARY_MODE(handle) ((void)0)
 #endif
+
+void do_decode(MSK144SearchContext& ctx, const Complex* device_input_data, ResultFilter& result_filter, SNRTracker& snr_tracker);
 
 void showHelp(const char* prog)
 {
@@ -123,7 +126,7 @@ int main(int argc, char* const argv[])
     float search_width_in_hz = 100.0f; // 100Hz width is +-50Hz of center frequency.
     int scan_depth = 3;                // the more level the more blocks will be averaged
     int analytic_method = 2;
-    int nbadsync_threshold = 1; // max reasonable value = 3
+    int nbadsync_threshold = 1; // max reasonable value = 4
 
     static struct option long_options[] = {{"help", no_argument, 0, 0},                     // 0
                                            {"center-frequency", required_argument, 0, 0},   // 1
@@ -199,14 +202,14 @@ int main(int argc, char* const argv[])
     }
 
     SimpleMetrics sm1("startup");
-    thrust::host_vector<short> real16_buf(Num6x864); // LEN_7168 was
+    thrust::host_vector<short> real16_buf(Num6x864); // 
 
     thrust::host_vector<Complex> a_in_host(Num6x864);
     thrust::device_vector<Complex> a_in_device(Num6x864);
     thrust::host_vector<Complex> a_out_host(Num6x864);
     thrust::device_vector<Complex> a_out_device(Num6x864);
 
-    thrust::host_vector<int8_t> iq2x8_buf(Num6x864 * 2); // LEN_7168 was
+    thrust::host_vector<int8_t> iq2x8_buf(Num6x864 * 2); // 
     thrust::host_vector<Complex> iq2x8_complex(Num6x864);
 
     const int NFFT = 8192;
@@ -215,11 +218,11 @@ int main(int argc, char* const argv[])
     Analytic analytic(NFFT);
 
     MSK144SearchContext ctx(center_frequncy_in_hz, search_width_in_hz, search_step_in_hz, scan_depth, nbadsync_threshold);
-    dim3 blocks = ctx.getBlocks();
-    dim3 threads = ctx.getThreads();
+    const auto blocks = ctx.getBlocks();
+    const auto threads = ctx.getThreads();
 
-    auto sbBlocks = ctx.getSoftBitsBlocks();
-    auto sbThreads = ctx.getSoftBitsThreads();
+    const auto sbBlocks = ctx.getSoftBitsBlocks();
+    const auto sbThreads = ctx.getSoftBitsThreads();
 
     std::cout << "Actual parameters:" << std::endl
               << "Center Frequency: " << center_frequncy_in_hz << "Hz" << std::endl
@@ -251,13 +254,14 @@ int main(int argc, char* const argv[])
 
     while(true)
     {
-        SimpleMetrics sm5("kernel-total");
+        SimpleMetrics sm5("working-loop-total");
         auto working_loop_calculation_timer = SimpleTimer();
+
+        const Complex* host_data_buffer = 0;
+        const Complex* device_data_buffer = 0;
 
         if(input_mode == INPUT_MODE::Real16bit)
         {
-            SimpleMetrics sm21("fread");
-
             if(first_read)
             {
                 size_t rc = fread(&real16_buf[0], sizeof(short), Num6x864, stdin);
@@ -282,7 +286,6 @@ int main(int argc, char* const argv[])
                     break;
                 }
             }
-            sm21.stop();
 
             working_loop_calculation_timer.reset(); // start calculating after read
 
@@ -300,7 +303,6 @@ int main(int argc, char* const argv[])
             float fac = 1.0f / rms;
             sm2.stop();
 
-            const Complex* device_input_data = 0;
 
             if(analytic_method == 1)
             {
@@ -309,45 +311,22 @@ int main(int argc, char* const argv[])
                 analytic.execute(host_complex_8192, Num6x864);
                 sm3.stop();
 
-                snr_tracker.process_data(analytic.getResultHost(), Num6x864); // calculate peak and AVG power
-                device_input_data = thrust::raw_pointer_cast(analytic.getResultDevice());
+                host_data_buffer = analytic.getResultHost().data();
+                device_data_buffer = thrust::raw_pointer_cast(analytic.getResultDevice());
             }
             else if(analytic_method == 2)
             {
+                SimpleMetrics sm3("analytic2");
                 thrust::transform(real16_buf.begin(), real16_buf.end(), a_in_host.begin(), [fac](short v) -> Complex { return Complex(fac * v, 0.0f); });
-
                 // copy to device
-                SimpleMetrics sm3_1("analytic2");
                 thrust::copy(a_in_host.begin(), a_in_host.end(), a_in_device.begin());
-                apply_shift_filter_shift<Num6x864, 32><<<1, 32>>>(thrust::raw_pointer_cast(&a_in_device[0]), thrust::raw_pointer_cast(&a_out_device[0]));
+                apply_shift_filter_shift<Num6x864, 32><<<1, 32>>>(thrust::raw_pointer_cast(a_in_device.data()), thrust::raw_pointer_cast(a_out_device.data()));
                 thrust::copy(a_out_device.begin(), a_out_device.end(), a_out_host.begin());
-                sm3_1.stop();
+                sm3.stop();
 
-                snr_tracker.process_data(a_out_host, Num6x864); // calculate peak and AVG power
-                device_input_data = thrust::raw_pointer_cast(&a_out_device[0]);
+                host_data_buffer = a_out_host.data();
+                device_data_buffer = thrust::raw_pointer_cast(a_out_device.data());
             }
-
-            SimpleMetrics sm_cr("clear_result");
-            ctx.resultKeeper().clear_result();
-            sm_cr.stop();
-            SimpleMetrics sm4("kernel");
-
-            scan_candidates_kernel<<<blocks, threads>>>(ctx, device_input_data);
-            SimpleMetrics sm102("softbits_kernel");
-            softbits_kernel<<<sbBlocks, sbThreads>>>(ctx, device_input_data);
-            sm102.stop();
-            
-            ctx.resultKeeper().filter_candidates();
-            auto ldpcBlocks = ctx.resultKeeper().getFilteredCandidatesBlocks();
-            std::cout << "ldpcBlocks=" << ldpcBlocks.x << std::endl;
-            SimpleMetrics sm101("ldpc_kernel");
-            ldpc_kernel<<<ldpcBlocks, 128>>>(ctx);
-            sm101.stop();
-            if(cudaDeviceSynchronize() != cudaSuccess)
-            {
-                throw std::runtime_error("Cuda error: Failed to synchronize kernel..");
-            }
-            sm4.stop();
 
         }
         else if(input_mode == INPUT_MODE::IQ8bits)
@@ -365,7 +344,7 @@ int main(int argc, char* const argv[])
             }
             else
             {
-                size_t half_len = Num6x864;
+                const size_t half_len = Num6x864;
                 // copy second half to begin
                 memcpy(&iq2x8_buf[0], &real16_buf[half_len], half_len);
                 // read to second part
@@ -380,7 +359,6 @@ int main(int argc, char* const argv[])
 
             working_loop_calculation_timer.reset(); // start calculating after read
 
-            SimpleMetrics sm22("conv");
             // convert to vector of Complex.
             for(int idx = 0; idx < Num6x864; idx++)
             {
@@ -389,31 +367,15 @@ int main(int argc, char* const argv[])
                 const float divider = 128.0f;
                 iq2x8_complex[idx] = Complex(i / divider, q / divider);
             }
-            sm22.stop();
-
-            auto calculation_timer = SimpleTimer();
 
             thrust::copy(iq2x8_complex.begin(), iq2x8_complex.end(), a_in_device.begin());
-            SimpleMetrics sm23("analytic2");
             apply_filter<Num6x864, 32><<<1, 32>>>(thrust::raw_pointer_cast(a_in_device.data()), thrust::raw_pointer_cast(a_out_device.data()));
+
+            // we copy to host (a_out_host) for SNR calculation
             thrust::copy(a_out_device.begin(), a_out_device.end(), a_out_host.begin());
-            sm23.stop();
 
-            // calculate peak and AVG power
-            SimpleMetrics sm24("snr");
-            snr_tracker.process_data(a_out_host, Num6x864);
-            sm24.stop();
-
-            SimpleMetrics sm25("kernel");
-            ctx.resultKeeper().clear_result();
-            scan_candidates_kernel<<<blocks, threads>>>(ctx, thrust::raw_pointer_cast(a_out_device.data()));
-            softbits_kernel<<<sbBlocks, sbThreads>>>(ctx, thrust::raw_pointer_cast(a_out_device.data()));
-            if(cudaDeviceSynchronize() != cudaSuccess)
-            {
-                throw std::runtime_error("Cuda error: Failed to synchronize kernel..");
-            }
-            sm25.stop();
-
+            host_data_buffer = a_out_host.data();
+            device_data_buffer = thrust::raw_pointer_cast(a_out_device.data());
         }
         else
         {
@@ -421,62 +383,11 @@ int main(int argc, char* const argv[])
             break;
         }
 
-        int cnt_decoded = 0;
-        int cnt_probes = 0;
+        snr_tracker.process_data(host_data_buffer, Num6x864); // calculate peak and AVG power
 
         result_filter.blockBegin();
 
-        SimpleMetrics sm6("JTdecode");
-
-        SimpleMetrics sm_ga("get_all_results", 1);
-        thrust::host_vector<ResultKeeper::ResultItem> all_results = ctx.resultKeeper().get_all_results();
-        sm_ga.stop();
-        SimpleMetrics sm_loop("loop", 1);
-        for(unsigned idx = 0; idx < all_results.size(); idx++)
-        {
-            ResultKeeper::ResultItem const& item = all_results[idx];
-
-            // nbadsync is a number of wrong bits in the sync pattern
-            // When nbadsync in [0,1] - there is a probability to decode the message.
-            // [2,3] - very rarely.
-            // 4+ - almost never.
-            if(/*item.nbadsync <= ctx.getNBadSyncThreshold() */ item.is_message_present )
-            {
-                cnt_probes++;
-
-#if 0
-                // Sync present. Try to decode entire message.
-                std::vector<float> sb(item.softbits_wo_sync, item.softbits_wo_sync + NumberOfSoftBitsWithoutSync);
-                auto res = decode_softbits(sb);
-#endif
-#if 1
-                std::vector<char> message77(item.message, item.message + NumberOfMessageBits);
-                auto res = decode_message(message77);
-                res.set_iter(item.ldpc_num_iterations);
-#endif 
-                
-                if(res.found())
-                {
-                    cnt_decoded++;
-#if 1
-                    std::cout << "D " << cnt_decoded << ": "
-                        << " snr=" << std::setw(4) << snr_tracker.getSNRI()
-                        << " idx=" << idx
-                        << " f0=" << std::setw(6) << item.f0
-                        << " num_avg=" << item.num_avg
-                        << " ptrn_idx=" << item.pattern_idx
-                        << " pos=" << std::setw(6) << item.pos
-                        << " xb=" << std::setw(8) << item.xb
-                        << " badsync=" << std::setw(4) << item.nbadsync
-                        << " iter=" << res.iter()
-                        << " msg='" << res.message() << "'" << std::endl;
-#endif
-                    result_filter.putMessage(snr_tracker.getSNRI(), item.f0, item.num_avg, item.nbadsync, item.pattern_idx, res.message());
-                }
-            }
-        }
-        sm_loop.stop();
-        sm6.stop();
+        do_decode(ctx, device_data_buffer, result_filter, snr_tracker);
 
         // aggregate result
         result_filter.blockEnd(); 
@@ -497,13 +408,116 @@ int main(int argc, char* const argv[])
                       << " pattern_idx=" << elm.pattern_idx << " date=" << elm.updateStampAsString() << " msg='" << elm.message << "'" << std::endl;
         }
 
-#if 0
-        std::cout << "Total/Probes/Success = " << all_results.size() << "/" << cnt_probes << "/" << cnt_decoded << std::endl;
-#endif
 
         sm5.stop();
     }
 
     std::cout << "Done" << std::endl;
     return 0;
+}
+
+void do_decode(MSK144SearchContext& ctx, const Complex* device_input_data, ResultFilter& result_filter, SNRTracker& snr_tracker)
+{
+    struct MessageItem 
+    {
+        MessageItem(const std::vector<char>& message) : m(message) {}
+        std::vector<char> m;
+        bool operator < (const MessageItem& other) const 
+        { 
+            for(size_t idx=0; idx > m.size(); idx++)
+            {
+                if(m[idx] < other.m[idx])
+                    return true;
+            }
+            return false; 
+        }
+    };
+
+    std::map<MessageItem, DecodeResult> decode_cache;
+
+    SimpleMetrics sm1("do_decode");
+
+    int cnt_decoded = 0;
+    int cnt_probes = 0;
+
+    const dim3 blocks = ctx.getBlocks();
+    const dim3 threads = ctx.getThreads();
+
+    const auto sbBlocks = ctx.getSoftBitsBlocks();
+    const auto sbThreads = ctx.getSoftBitsThreads();
+
+    ctx.resultKeeper().clear_result();
+
+    scan_candidates_kernel<<<blocks, threads>>>(ctx, device_input_data);
+    softbits_kernel<<<sbBlocks, sbThreads>>>(ctx, device_input_data);
+
+    ctx.resultKeeper().filter_candidates();
+    const auto ldpcBlocks = ctx.resultKeeper().getFilteredCandidatesBlocks();
+
+    ldpc_kernel<<<ldpcBlocks, 128>>>(ctx);
+    if(cudaDeviceSynchronize() != cudaSuccess)
+    {
+        throw std::runtime_error("Cuda error: Failed to synchronize kernel..");
+    }
+    sm1.stop();
+
+    SimpleMetrics sm6("JTdecode");
+
+    SimpleMetrics sm_ga("get_all_results", 1);
+    thrust::host_vector<ResultKeeper::ResultItem> all_results = ctx.resultKeeper().get_all_results();
+    sm_ga.stop();
+    SimpleMetrics sm_loop("loop", 1);
+    for(unsigned idx = 0; idx < all_results.size(); idx++)
+    {
+        ResultKeeper::ResultItem const& item = all_results[idx];
+
+        if(item.is_message_present)
+        {
+            cnt_probes++;
+
+#if 0
+            // Sync present. Try to decode entire message.
+            std::vector<float> sb(item.softbits_wo_sync, item.softbits_wo_sync + NumberOfSoftBitsWithoutSync);
+            auto res = decode_softbits(sb);
+#endif
+
+            std::vector<char> message77(item.message, item.message + NumberOfMessageBits);
+            MessageItem msg_item(message77);
+
+            if(decode_cache.find(msg_item) == decode_cache.end())
+            {
+                // Cache miss. Decode message.
+                auto res = decode_message(message77);
+                decode_cache[msg_item] = res; // put to cache.
+            }
+
+            const auto& res = decode_cache[msg_item];
+
+            if(res.found())
+            {
+                cnt_decoded++;
+#if 0
+                std::cout << "D " << cnt_decoded << ": "
+                    << " snr=" << std::setw(4) << snr_tracker.getSNRI()
+                    << " idx=" << idx
+                    << " f0=" << std::setw(6) << item.f0
+                    << " num_avg=" << item.num_avg
+                    << " ptrn_idx=" << item.pattern_idx
+                    << " pos=" << std::setw(6) << item.pos
+                    << " xb=" << std::setw(8) << item.xb
+                    << " badsync=" << std::setw(4) << item.nbadsync
+                    << " iter=" << item.ldpc_num_iterations
+                    << " msg='" << res.message() << "'" << std::endl;
+#endif
+                result_filter.putMessage(snr_tracker.getSNRI(), item.f0, item.num_avg, item.nbadsync, item.pattern_idx, res.message());
+            }
+        }
+    }
+    sm_loop.stop();
+    sm6.stop();
+
+#if 0
+    std::cout << "Total/Probes/Success = " << all_results.size() << "/" << cnt_probes << "/" << cnt_decoded << std::endl;
+#endif
+
 }

@@ -20,6 +20,7 @@ public:
     void execute(thrust::host_vector<Complex> const& in, size_t npts);
     thrust::device_ptr<Complex> getResultDevice();
     thrust::host_vector<Complex> const& getResultHost() const;
+    thrust::device_vector<Complex> const& getResultDeviceVector() const;
 
 private:
     int _nfft;

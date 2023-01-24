@@ -122,6 +122,11 @@ public:
 
         thrust::host_vector<unsigned> indexes;
 
+        // _nbadsync_threshold is a number of wrong bits in the sync pattern
+        // When nbadsync in [0,1] - there is a probability to decode the message.
+        // [2,3] - very rarely.
+        // 4+ - almost never.
+
         for(unsigned idx=0; idx < _total_items; idx++)
         {
             if(res[idx].nbadsync <= _nbadsync_threshold)

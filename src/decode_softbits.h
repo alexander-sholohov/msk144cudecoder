@@ -14,15 +14,12 @@ class DecodeResult
 {
 public:
     DecodeResult() = default;
-    DecodeResult(std::string msg, int iter);
+    DecodeResult(std::string msg);
     bool found() const { return m_found; }
-    int iter() const { return m_iter; }
-    void set_iter(int iter) { m_iter = iter; }
     std::string const& message() const { return m_message; }
 
 private:
     bool m_found{};
-    int m_iter{};
     std::string m_message{};
 };
 

@@ -169,3 +169,8 @@ thrust::host_vector<Complex> const& Analytic::getResultHost() const
 {
     return _analytic_result_host;
 }
+
+thrust::device_vector<Complex> const& Analytic::getResultDeviceVector() const
+{
+    return _analytic_result_dev;
+}

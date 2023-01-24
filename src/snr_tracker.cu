@@ -15,9 +15,9 @@ SNRTracker::SNRTracker()
 {
 }
 
-void SNRTracker::process_data(thrust::host_vector<Complex> const& data, const unsigned length)
+void SNRTracker::process_data(const Complex const* data, const unsigned length)
 {
-    assert(data.size() >= length);
+    //assert(data.size() >= length);
 
     const int num_elements = 8;
     std::vector<float> arr(num_elements, 0.0f);

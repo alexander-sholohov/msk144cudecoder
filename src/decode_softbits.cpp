@@ -14,9 +14,8 @@
 #include <numeric>
 #include <stdexcept>
 
-DecodeResult::DecodeResult(std::string msg, int iter)
+DecodeResult::DecodeResult(std::string msg)
     : m_found(true)
-    , m_iter(iter)
     , m_message(std::move(msg))
 {
 }
@@ -80,6 +79,6 @@ DecodeResult decode_message(const std::vector<char> const& message77)
     size_t num_chars_to_cut = it - msg.rbegin();
     std::string res(msg.begin(), msg.begin() + msg.size() - num_chars_to_cut);
 
-    return DecodeResult(res, 0);
+    return DecodeResult(res);
 
 }
