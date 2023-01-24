@@ -40,7 +40,7 @@ struct GpuTimer
 #endif
     }
 
-    __device__ void DisplyResult(const char* note)
+    __device__ void DisplayResult(const char* note)
     {
 #ifdef USE_SIMPLE_GPU_TIMER
         U64 clock_diff = c_stop - c_start;

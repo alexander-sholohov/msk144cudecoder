@@ -374,18 +374,18 @@ __global__ void scan_candidates_kernel(MSK144SearchContext ctx, const Complex* _
 #if 0
     if(threadIdx.x == 0)
     {
-        t1.DisplyResult("timing t1");
+        t1.DisplayResult("timing t1");
         
-        t2.DisplyResult("timing t2");
-        //t2_1.DisplyResult("  timing t2_1");
-        //t2_2.DisplyResult("  timing t2_2");
-        //t2_3.DisplyResult("timing t2_3");
-        //t2_4.DisplyResult("timing t2_4");
-        //t2_5.DisplyResult("timing t2_5");
+        t2.DisplayResult("timing t2");
+        //t2_1.DisplayResult("  timing t2_1");
+        //t2_2.DisplayResult("  timing t2_2");
+        //t2_3.DisplayResult("timing t2_3");
+        //t2_4.DisplayResult("timing t2_4");
+        //t2_5.DisplayResult("timing t2_5");
         
-        t3.DisplyResult("timing t3");
-        //t4.DisplyResult("timing t4");
-        t_total.DisplyResult("timing t_total");
+        t3.DisplayResult("timing t3");
+        //t4.DisplayResult("timing t4");
+        t_total.DisplayResult("timing t_total");
     }
 #endif
 
