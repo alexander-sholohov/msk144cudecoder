@@ -2,7 +2,7 @@
 
 **What is it:**
 
-This is CUDA-based MSK144 signal decoder. It accepts input samples in Audio or IQ forms at *stdin*, performs decoding and in case of a message present it prints the result to *stdout*. The algorithm uses GPU power to find the sync pattern, transform the samples into 144 softbits and perform the LPDC decoding. At the final stage, one original CPU-based WSJT Fortran functions unpack77() is used to decode 77 bits into text message.  
+This is CUDA-based MSK144 signal decoder. It accepts input samples in Audio or IQ forms at *stdin*, performs decoding and in case of a message present it prints the result to *stdout*. The algorithm uses GPU power to find the sync pattern, transform the samples into 128 softbits and perform the LDPC decoding. At the final stage, one original CPU-based WSJT Fortran functions is used to decode 77 bits into text message.  
 Up to six frames averages are used to find a message in a deep noise.
 
 
