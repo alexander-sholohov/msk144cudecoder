@@ -61,7 +61,12 @@ Deep scan. More resources usage. Scan in width of 300Hz, up to 6 frames average,
 ./msk144cudecoder --search-width=300 --scan-depth=6 --nbadsync-threshold=3 
 ```
 
-Full example. Getting IQ stream from rtl_sdr:
+Decode provided sample wav file.
+```shell
+cat ../demo/0001.wav | ./msk144cudecoder
+```
+
+Getting IQ stream from rtl_sdr:
 ```shell
 rtl_sdr -s 1920000 -f 144361500 -g 20 - | csdr convert_u8_f  | csdr fir_decimate_cc 8  | csdr fir_decimate_cc 5 | csdr fir_decimate_cc 4 | csdr gain_ff 100.0 | csdr convert_f_s8 | ./msk144cudecoder --search-width=100 --read-mode=2 --scan-depth=3
 ```
