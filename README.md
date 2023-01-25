@@ -41,7 +41,7 @@ cmake --build .
 
 Executable file *msk144cudecoder* will appear in the current directory.
 
-To run program this program on Windows you will need bpdecode.dll. How to build it see ./win32bpdecode/readme.txt
+To run this program on Windows you will need bpdecode.dll. How to build it see ./win32bpdecode/readme.txt
 
 
 **Run Examples:**
