@@ -6,7 +6,7 @@
 
 #include "sum_reduction.cuh"
 
-__global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restrict__  cdat)
+__global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restrict__ cdat)
 {
     static_assert(NumSoftbitsThreads >= 144, "Must be 144+ threads");
 
@@ -176,7 +176,7 @@ __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restri
         {
             softbits[pos_iq * 2 + iq_selection] = sb; // QIQI...
         }
-        
+
     } // end of scope
     __syncthreads();
 
@@ -200,7 +200,7 @@ __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restri
     const float sigma = 0.60f;
     const float scale = 2.0f / (ssig * sigma * sigma);
 
-    // fill softbits_wo_sync 
+    // fill softbits_wo_sync
     if(threadIdx.x < 48)
     {
         softbits_wo_sync[threadIdx.x] = scale * softbits[8 + threadIdx.x];
@@ -246,5 +246,4 @@ __global__ void softbits_kernel(MSK144SearchContext ctx, const Complex* __restri
             ctx.resultKeeper().put_softbits(blockIdx.x, pattern_idx, candidate_num, nbadsync, softbits_wo_sync);
         }
     }
-
 }

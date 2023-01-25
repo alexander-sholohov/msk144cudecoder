@@ -50,10 +50,7 @@ public:
         _filtered_candidate_index = thrust::device_malloc<unsigned>(total_items);
     }
 
-    __host__ void deinit()
-    {
-        thrust::device_free(_result_items);
-    }
+    __host__ void deinit() { thrust::device_free(_result_items); }
 
     __host__ void clear_result()
     {
@@ -127,7 +124,7 @@ public:
         // [2,3] - very rarely.
         // 4+ - almost never.
 
-        for(unsigned idx=0; idx < _total_items; idx++)
+        for(unsigned idx = 0; idx < _total_items; idx++)
         {
             if(res[idx].nbadsync <= _nbadsync_threshold)
             {
@@ -170,7 +167,6 @@ public:
     __host__ dim3 getSoftBitsThreads() const { return dim3(NumSoftbitsThreads); }
 
     __host__ dim3 getFilteredCandidatesBlocks() const { return dim3(_num_filtered_candidates); }
-
 
 private:
     unsigned _num_blocks;

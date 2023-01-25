@@ -4,10 +4,9 @@
 // License: MIT
 //
 
-
 #define CRC13_POLY 0x15D7
 
-
+// clang-format off
 const char ldpc_reverse_map[128][3][2] = { 
     {{0, 20}, {0, 33}, {0, 35}},
     {{0, 0}, {0, 7}, {0, 27}},
@@ -138,7 +137,7 @@ const char ldpc_reverse_map[128][3][2] = {
     {{9, 32}, {9, 35}, {9, 37}},
     {{9, 7}, {9, 9}, {9, 34}} 
 };
-
+// clang-format on
 
 class LDPCContext
 {
@@ -146,7 +145,7 @@ public:
     LDPCContext() = default;
     LDPCContext(const LDPCContext&) = default;
 
-    __host__ void init() 
+    __host__ void init()
     {
         // CRC13
         thrust::host_vector<uint16_t> table(256);
@@ -154,7 +153,6 @@ public:
 
         _crc_table = thrust::device_malloc<uint16_t>(256);
         thrust::copy(table.begin(), table.end(), _crc_table);
-
 
         // num columns in row.  full=11, not full=10
         _is_full_row = thrust::device_malloc<bool>(38);
@@ -170,27 +168,18 @@ public:
         thrust::copy((char*)ldpc_reverse_map, (char*)ldpc_reverse_map + sizeof(ldpc_reverse_map), _ldpc_reverse_map);
     }
 
-    __host__ void deinit() 
+    __host__ void deinit()
     {
         thrust::device_free(_crc_table);
         thrust::device_free(_is_full_row);
         thrust::device_free(_ldpc_reverse_map);
     }
 
-    __device__ const uint16_t* get_crc_table() const 
-    { 
-        return thrust::raw_pointer_cast(_crc_table); 
-    }
+    __device__ const uint16_t* get_crc_table() const { return thrust::raw_pointer_cast(_crc_table); }
 
-    __device__ const bool* get_is_full_row() const 
-    { 
-        return thrust::raw_pointer_cast(_is_full_row); 
-    }
+    __device__ const bool* get_is_full_row() const { return thrust::raw_pointer_cast(_is_full_row); }
 
-    __device__ const char* get_reverse_map() const 
-    { 
-        return thrust::raw_pointer_cast(_ldpc_reverse_map); 
-    }
+    __device__ const char* get_reverse_map() const { return thrust::raw_pointer_cast(_ldpc_reverse_map); }
 
 private:
     void gen_crc13_table(uint16_t* table)
@@ -200,17 +189,17 @@ private:
         const uint16_t high_bit_mask = (1 << (LengthCRC - 1));
         const int N = 256;
 
-        for(int i=0; i<N; i++)
+        for(int i = 0; i < N; i++)
         {
             uint16_t dividend = i;
             uint16_t remainder = 0;
-            for (int bit = 0; bit < 8; bit++)
+            for(int bit = 0; bit < 8; bit++)
             {
                 if(dividend & 0x80)
                 {
                     remainder ^= high_bit_mask;
                 }
-                bool const  quotient = remainder & high_bit_mask;
+                bool const quotient = remainder & high_bit_mask;
                 remainder <<= 1;
                 if(quotient)
                 {
@@ -224,7 +213,6 @@ private:
     }
 
 private:
-
     thrust::device_ptr<uint16_t> _crc_table;
     thrust::device_ptr<bool> _is_full_row;
     thrust::device_ptr<char> _ldpc_reverse_map;

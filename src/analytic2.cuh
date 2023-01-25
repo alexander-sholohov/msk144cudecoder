@@ -11,7 +11,6 @@ constexpr float sc45 = 0.707106781f; // sin(45) = sqrt(2)/2 = 0.7071...
 template<unsigned int NumSlices, unsigned NumAnalyticThreads>
 __device__ void _frequency_shift_fs8_left(Complex* cdat)
 {
-
     Complex wttt;
     switch(threadIdx.x & 7)
     {
@@ -49,7 +48,6 @@ __device__ void _frequency_shift_fs8_left(Complex* cdat)
     }
     __syncthreads();
 }
-
 
 template<unsigned int NumSlices, unsigned NumAnalyticThreads>
 __device__ void _frequency_shift_fs8_right(Complex* cdat)
@@ -114,7 +112,6 @@ __device__ void _copy_from_global_to_shared(const Complex* __restrict__ input, C
         cdat[32 + long_idx] = input[long_idx];
     }
     __syncthreads();
-
 }
 
 template<unsigned TotalElements, unsigned NumSlices, unsigned NumAnalyticThreads>
@@ -222,7 +219,6 @@ __device__ void _lpf_convolution(Complex* cdat)
     }
     __syncthreads();
 #endif
-
 }
 
 template<unsigned int NumSlices, unsigned NumAnalyticThreads>
@@ -234,7 +230,6 @@ __device__ void _backcopy_to_global_memory(const Complex* cdat, Complex* result)
         const unsigned long_idx = slice_no * NumAnalyticThreads + threadIdx.x;
         result[long_idx] = cdat[32 + long_idx];
     }
-
 }
 
 template<unsigned int NumSamples, unsigned NumAnalyticThreads>
@@ -260,7 +255,6 @@ __global__ void apply_shift_filter_shift(const Complex* __restrict__ input, Comp
     _lpf_convolution<TotalElements, NumSlices, NumAnalyticThreads>(cdat);
     _frequency_shift_fs8_right<NumSlices, NumAnalyticThreads>(cdat);
     _backcopy_to_global_memory<NumSlices, NumAnalyticThreads>(cdat, result);
-
 }
 
 template<unsigned int NumSamples, unsigned NumAnalyticThreads>
@@ -284,5 +278,4 @@ __global__ void apply_filter(const Complex* __restrict__ input, Complex* result)
     _copy_from_global_to_shared<TotalElements, NumSlices, NumAnalyticThreads>(input, cdat);
     _lpf_convolution<TotalElements, NumSlices, NumAnalyticThreads>(cdat);
     _backcopy_to_global_memory<NumSlices, NumAnalyticThreads>(cdat, result);
-
 }

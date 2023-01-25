@@ -24,7 +24,7 @@ struct FindMaxInterWarpItem
     unsigned pos;
 };
 
-__global__ void scan_kernel(MSK144SearchContext ctx, const Complex* __restrict__  cdat)
+__global__ void scan_kernel(MSK144SearchContext ctx, const Complex* __restrict__ cdat)
 {
     GpuTimer t1;
     GpuTimer t2;
@@ -32,7 +32,7 @@ __global__ void scan_kernel(MSK144SearchContext ctx, const Complex* __restrict__
 
     __shared__ Complex cdat2[Num6x864];
     __shared__ BestCandidateInGroup best_candidates[NumCandidatesPerPattern]; // 8 or 16 are ok
-    
+
     constexpr unsigned NumWarpsInSlice = NumScanThreads / WarpSize;
     __shared__ FindMaxInterWarpItem best_xb_for_reduction[NumWarpsInSlice];
 
@@ -247,7 +247,7 @@ __global__ void scan_kernel(MSK144SearchContext ctx, const Complex* __restrict__
             {
                 float xb_other = __shfl_down_sync(mask, xb_best, 8); // [0,16]
                 unsigned pos_other = __shfl_down_sync(mask, pos_best, 8);
-                if (xb_other > xb_best)
+                if(xb_other > xb_best)
                 {
                     xb_best = xb_other;
                     pos_best = pos_other;
@@ -259,7 +259,7 @@ __global__ void scan_kernel(MSK144SearchContext ctx, const Complex* __restrict__
             {
                 float xb_other = __shfl_down_sync(mask, xb_best, 16); // [0]
                 unsigned pos_other = __shfl_down_sync(mask, pos_best, 16);
-                if (xb_other > xb_best)
+                if(xb_other > xb_best)
                 {
                     xb_best = xb_other;
                     pos_best = pos_other;

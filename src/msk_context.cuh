@@ -105,7 +105,7 @@ private:
 
         _number_of_blocks = half_len * 2 + 1; // 25 * 2 + 1 = 51
         _if1 = -1 * half_len * search_step;   // -25 * 2 = -50
-        _number_of_threads = NumScanThreads;      // constant = 16
+        _number_of_threads = NumScanThreads;  // constant = 16
 
         make_msk_sync42();
 
@@ -154,7 +154,7 @@ public:
     }
 
     __device__ __host__ ResultKeeper& resultKeeper() { return _result_keeper; }
-    
+
     __device__ __host__ LDPCContext const& ldpcContext() const { return _ldpc_context; }
 
     __device__ __host__ int scanDepth() const { return _scan_depth; }

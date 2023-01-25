@@ -67,9 +67,9 @@ DecodedResult decode_message(const std::vector<char>& message77)
     int unpk77_success = 0;
 
     fortran_unpack77(&c77[0], // 77
-        &nrx,
-        &msg[0], // 37
-        &unpk77_success);
+                     &nrx,
+                     &msg[0], // 37
+                     &unpk77_success);
 
     if(unpk77_success == 0)
         return DecodedResult();
@@ -80,5 +80,4 @@ DecodedResult decode_message(const std::vector<char>& message77)
     std::string res(msg.begin(), msg.begin() + msg.size() - num_chars_to_cut);
 
     return DecodedResult(res);
-
 }

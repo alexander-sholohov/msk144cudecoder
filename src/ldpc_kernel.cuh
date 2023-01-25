@@ -15,15 +15,15 @@ __device__ void convert_cw_to_bytes(const char* cw, unsigned char* byte_buf)
 
     int v = cw[threadIdx.x]; // 01 01 01 01 01 ...
     int other_v;
-    other_v = __shfl_down_sync(mask, v, 1); // take value from neighbor thread. 
-    v = (v << 1) | other_v;  // 03 xx 03 xx ...
+    other_v = __shfl_down_sync(mask, v, 1); // take value from neighbor thread.
+    v = (v << 1) | other_v;                 // 03 xx 03 xx ...
     other_v = __shfl_down_sync(mask, v, 2);
-    v = (v << 2) | other_v;  // 0f xx xx xx 0f xx xx xx 0f xx xx xx ...
+    v = (v << 2) | other_v; // 0f xx xx xx 0f xx xx xx 0f xx xx xx ...
     other_v = __shfl_down_sync(mask, v, 4);
-    v = (v << 4) | other_v;  // ff xx xx xx xx xx xx xx ff xx xx .....
+    v = (v << 4) | other_v; // ff xx xx xx xx xx xx xx ff xx xx .....
 
     // ok. 8 bits were gathered. Each warp contains 4 result bytes in threads: [0,8,16,24]. Number of warps = 4 (128/32).
-    
+
     v = __shfl_sync(mask, v, threadIdx.x & 0x18); // Spread(duplicate) values from threads [0,8,16,24] across 8 neighbor right threads.
     byte_buf[threadIdx.x / 8] = v;
     __syncthreads();
@@ -32,7 +32,7 @@ __device__ void convert_cw_to_bytes(const char* cw, unsigned char* byte_buf)
 __device__ uint16_t calc_crc13(const unsigned char* buf, const unsigned length, const uint16_t* crc_table)
 {
     uint16_t remainder = 0;
-    for(int i=0; i<length; i++)
+    for(int i = 0; i < length; i++)
     {
         const int index = (remainder >> (13 - 8)) & 0xff;
         remainder <<= 8;
@@ -48,7 +48,8 @@ __device__ bool check_crc(unsigned char* byte_buf, const uint16_t* crc_table)
     // CRC starts from bit 78 and takes 13 bits.
 
     // Take crc.
-    const uint32_t unaligned_crc_from_message = ((static_cast<uint32_t>(byte_buf[9]) & 0x7) << 16) | (static_cast<uint32_t>(byte_buf[10]) << 8) | (byte_buf[11] & 0xc0); // 3 + 8 + 2 = 13
+    const uint32_t unaligned_crc_from_message =
+      ((static_cast<uint32_t>(byte_buf[9]) & 0x7) << 16) | (static_cast<uint32_t>(byte_buf[10]) << 8) | (byte_buf[11] & 0xc0); // 3 + 8 + 2 = 13
     const uint16_t crc_from_message = unaligned_crc_from_message >> 6;
 
     // Eliminate crc from initial buffer.
@@ -75,24 +76,24 @@ __device__ float platanh(float x)
     {
         return x / 0.83f;
     }
-    else if( z <= 0.9217f)
+    else if(z <= 0.9217f)
     {
-        return isign*(z-0.4064f)/0.322f;
+        return isign * (z - 0.4064f) / 0.322f;
     }
     else if(z <= 0.9951f)
     {
-        return isign*(z-0.8378f)/0.0524f;
+        return isign * (z - 0.8378f) / 0.0524f;
     }
     else if(z <= 0.9998f)
     {
-        return isign*(z-0.9914f)/0.0012f;
+        return isign * (z - 0.9914f) / 0.0012f;
     }
 
-    return isign*7.0f;
+    return isign * 7.0f;
 }
 
 //
-// The algorighm is taken from WSJT project. File name is bpdecode128_90.f90 . 
+// The algorighm is taken from WSJT project. File name is bpdecode128_90.f90 .
 // A log-domain belief propagation decoder for the (128,90) LDPC code.
 // It is adapted to be used by 128 parallel CUDA threads.
 //
@@ -109,7 +110,7 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
     __shared__ bool message_found;
     __shared__ uint16_t crc_table[256];
     __shared__ unsigned char crc_buf[16];
-    
+
     const float* softbits = ctx.resultKeeper().get_softbits_by_filtered_index(blockIdx.x);
 
     {
@@ -123,7 +124,7 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
         // Fill reverse map in shared array. We use shared array as fast memory.
         const char* rev_map = ctx.ldpcContext().get_reverse_map();
         char* rev_map_dst = &mp[0][0][0];
-        for(int i=0; i<6; i++)
+        for(int i = 0; i < 6; i++)
         {
             const int long_idx = 6 * threadIdx.x + i; // 128 rows with 6 bytes in each row
             rev_map_dst[long_idx] = rev_map[long_idx];
@@ -138,14 +139,14 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
             is_full_row[threadIdx.x] = full_row_table[threadIdx.x];
         }
     }
-    __syncthreads(); // 
+    __syncthreads(); //
 
     const unsigned thr_idx = threadIdx.x;
 
     // Initialize 'tov' array.
-    for(size_t i=0; i < 3; i++) 
-    { 
-        tov[i][thr_idx] = 0.0f; 
+    for(size_t i = 0; i < 3; i++)
+    {
+        tov[i][thr_idx] = 0.0f;
     }
 
     if(thr_idx < 38)
@@ -157,17 +158,19 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
 
     __syncthreads();
 
-
-    for(unsigned iter=0; iter < NumberOfLDPCIterations; iter++)
+    for(unsigned iter = 0; iter < NumberOfLDPCIterations; iter++)
     {
         // Update bit log likelihood ratios (tov=0 in iteration 0).
         float sum = 0.0f;
-        for(size_t k=0;k<3;k++) { sum += tov[k][thr_idx]; }
+        for(size_t k = 0; k < 3; k++)
+        {
+            sum += tov[k][thr_idx];
+        }
         zn[thr_idx] = softbits[thr_idx] + sum;
-        cw[thr_idx] = (zn[thr_idx] > 0.0f)? 1 : 0;
+        cw[thr_idx] = (zn[thr_idx] > 0.0f) ? 1 : 0;
         __syncthreads();
 
-        for(int k=0; k< 3; k++)
+        for(int k = 0; k < 3; k++)
         {
             chk_cw_toc[mp[thr_idx][k][0]][mp[thr_idx][k][1]] = cw[thr_idx];
         }
@@ -179,7 +182,7 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
         {
             // Only first 38 threads calculates sum for correspondings columns.
             int sum = 0;
-            for(size_t i=0; i < 11; i++)
+            for(size_t i = 0; i < 11; i++)
             {
                 sum += chk_cw_toc[i][thr_idx];
             }
@@ -197,7 +200,7 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
             is_crc_valid = check_crc(crc_buf, crc_table);
         }
 
-        int is_bit_bad = (cw[thr_idx] == 1 && softbits[thr_idx] > 0.0f || cw[thr_idx] == 0 && softbits[thr_idx] <= 0.0f)? 0: 1;
+        int is_bit_bad = (cw[thr_idx] == 1 && softbits[thr_idx] > 0.0f || cw[thr_idx] == 0 && softbits[thr_idx] <= 0.0f) ? 0 : 1;
         int num_hard_errors = sum_reduction_two_cycles(is_bit_bad, arr_reduction_helper);
         if(threadIdx.x == 0)
         {
@@ -218,23 +221,22 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
             return;
         }
 
-
-        // ---- Send messages from bits to check nodes 
-        for(int k=0; k < 3; k++)
+        // ---- Send messages from bits to check nodes
+        for(int k = 0; k < 3; k++)
         {
             toc[mp[thr_idx][k][0]][mp[thr_idx][k][1]] = zn[thr_idx] - tov[k][thr_idx]; // subtract off what the bit had received from the check
         }
         __syncthreads();
 
         // ----- send messages from check nodes to variable nodes
-        for(int k=0; k < 3; k++)
+        for(int k = 0; k < 3; k++)
         {
             const int column = mp[thr_idx][k][1];
             const int row_to_exclude = mp[thr_idx][k][0];
             float product = 1.0f;
-            for(int j=0; j < 11; j++)
+            for(int j = 0; j < 11; j++)
             {
-                if((j < 10 || is_full_row[column]) && j != row_to_exclude) 
+                if((j < 10 || is_full_row[column]) && j != row_to_exclude)
                 {
                     product *= tanh(-0.5f * toc[j][column]);
                 }
@@ -243,6 +245,5 @@ __global__ void ldpc_kernel(MSK144SearchContext ctx)
             tov[k][thr_idx] = 2.0f * platanh(-product);
         }
         __syncthreads();
-
     }
 }

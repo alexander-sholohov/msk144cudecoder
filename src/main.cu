@@ -53,6 +53,7 @@ void do_decode(MSK144SearchContext& ctx, const Complex* device_input_data, Resul
 
 void showHelp(const char* prog)
 {
+    // clang-format off
     std::cout << "Calling conversion: " << prog << " {[--help] | <options> }" << std::endl;
     std::cout << " Where options are: " << std::endl;
     std::cout << "                   --help                      Show this help and exit." << std::endl;
@@ -63,7 +64,8 @@ void showHelp(const char* prog)
     std::cout << "                   --read-mode=[1|2]           1=Audio,16 bit, mono, 12000sps, 1500Hz-recommended center; 2=IQ,8 bit, 12000sps, 0Hz-center. Default mode = 1." << std::endl;
     std::cout << "                   --analytic-method=[1|2]     How to convert real signal to ananlytyc quadrature signal. 1 = FFT; 2 = Shift-left + LPF + Shift-right. Default=2." << std::endl;
     std::cout << "                   --nbadsync-threshold=[1..4] Specifies how many errors in sync pattern are acceptable to be passed to LDPC decoder. Default=2." << std::endl;
-                  
+    // clang-format on
+
     return;
 }
 
@@ -205,14 +207,14 @@ int main(int argc, char* const argv[])
     }
 
     SimpleMetrics sm1("startup");
-    thrust::host_vector<short> real16_buf(Num6x864); // 
+    thrust::host_vector<short> real16_buf(Num6x864); //
 
     thrust::host_vector<Complex> a_in_host(Num6x864);
     thrust::device_vector<Complex> a_in_device(Num6x864);
     thrust::host_vector<Complex> a_out_host(Num6x864);
     thrust::device_vector<Complex> a_out_device(Num6x864);
 
-    thrust::host_vector<int8_t> iq2x8_buf(Num6x864 * 2); // 
+    thrust::host_vector<int8_t> iq2x8_buf(Num6x864 * 2); //
     thrust::host_vector<Complex> iq2x8_complex(Num6x864);
 
     const int NFFT = 8192;
@@ -295,17 +297,14 @@ int main(int argc, char* const argv[])
             // convert to IQ using Direct FFT + Inverse FFT
 
             SimpleMetrics sm2("reduce");
-            float sum_rms2 = thrust::reduce(real16_buf.begin(), real16_buf.end(), 0.0f,
-                                            [](float acc, short const& x) -> double
-                                            {
-                                                float b = static_cast<float>(x);
-                                                return acc + b * b;
-                                            });
+            float sum_rms2 = thrust::reduce(real16_buf.begin(), real16_buf.end(), 0.0f, [](float acc, short const& x) -> double {
+                float b = static_cast<float>(x);
+                return acc + b * b;
+            });
 
             float rms = sqrt(sum_rms2 / Num6x864);
             float fac = 1.0f / rms;
             sm2.stop();
-
 
             if(analytic_method == 1)
             {
@@ -330,7 +329,6 @@ int main(int argc, char* const argv[])
                 host_data_buffer = a_out_host.data();
                 device_data_buffer = thrust::raw_pointer_cast(a_out_device.data());
             }
-
         }
         else if(input_mode == INPUT_MODE::IQ8bits)
         {
@@ -393,14 +391,14 @@ int main(int argc, char* const argv[])
         do_decode(ctx, device_data_buffer, result_filter, snr_tracker);
 
         // aggregate result
-        result_filter.blockEnd(); 
+        result_filter.blockEnd();
 
         // Print warning if consume a lot of cpu time.
         const int working_loop_timeout_soft_limit_in_ms = 210;
         if(working_loop_calculation_timer.millisecondsElapsed() > working_loop_timeout_soft_limit_in_ms)
         {
             std::cout << "Warning: Working loop takes too much time: " << working_loop_calculation_timer.millisecondsElapsed() << " ms"
-                << " of " << working_loop_timeout_soft_limit_in_ms << " ms max." << std::endl;
+                      << " of " << working_loop_timeout_soft_limit_in_ms << " ms max." << std::endl;
         }
 
         // print agregated result
@@ -411,7 +409,6 @@ int main(int argc, char* const argv[])
                       << " pattern_idx=" << elm.pattern_idx << " date=" << elm.updateStampAsString() << " msg='" << elm.message << "'" << std::endl;
         }
 
-
         sm5.stop();
     }
 
@@ -421,18 +418,21 @@ int main(int argc, char* const argv[])
 
 void do_decode(MSK144SearchContext& ctx, const Complex* device_input_data, ResultFilter& result_filter, SNRTracker& snr_tracker)
 {
-    struct MessageItem 
+    struct MessageItem
     {
-        MessageItem(const std::vector<char>& message) : m(message) {}
+        MessageItem(const std::vector<char>& message)
+            : m(message)
+        {
+        }
         std::vector<char> m;
-        bool operator < (const MessageItem& other) const 
-        { 
-            for(size_t idx=0; idx > m.size(); idx++)
+        bool operator<(const MessageItem& other) const
+        {
+            for(size_t idx = 0; idx > m.size(); idx++)
             {
                 if(m[idx] < other.m[idx])
                     return true;
             }
-            return false; 
+            return false;
         }
     };
 
@@ -522,5 +522,4 @@ void do_decode(MSK144SearchContext& ctx, const Complex* device_input_data, Resul
 #if 0
     std::cout << "Total/Probes/Success = " << all_results.size() << "/" << cnt_probes << "/" << cnt_decoded << std::endl;
 #endif
-
 }

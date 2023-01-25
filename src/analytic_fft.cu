@@ -90,20 +90,17 @@ void Analytic::execute(thrust::host_vector<Complex> const& in, size_t npts)
     thrust::host_vector<cuFloatComplex> in2(_nfft);
 
     // copy partial with scaling, leaving rest as zero
-    thrust::transform(in.begin(), in.begin() + npts, in2.begin(),
-                      [fac](Complex const& x) -> cuFloatComplex
-                      {
-                          Complex r = fac * x;
-                          return make_cuFloatComplex(r.real(), r.imag());
-                      });
+    thrust::transform(in.begin(), in.begin() + npts, in2.begin(), [fac](Complex const& x) -> cuFloatComplex {
+        Complex r = fac * x;
+        return make_cuFloatComplex(r.real(), r.imag());
+    });
 
     thrust::device_vector<cuFloatComplex> in_device = in2;
     thrust::device_vector<cuFloatComplex> out_device(_nfft);
 
     cufftResult fftrc;
 
-    fftrc = cufftExecC2C(_fftHandle, thrust::raw_pointer_cast(&in_device[0]), thrust::raw_pointer_cast(&out_device[0]),
-                         CUFFT_FORWARD);
+    fftrc = cufftExecC2C(_fftHandle, thrust::raw_pointer_cast(&in_device[0]), thrust::raw_pointer_cast(&out_device[0]), CUFFT_FORWARD);
 
     if(fftrc != CUFFT_SUCCESS)
     {
@@ -132,8 +129,7 @@ void Analytic::execute(thrust::host_vector<Complex> const& in, size_t npts)
     // copy to device
     thrust::copy(specter.begin(), specter.end(), out_device.begin());
 
-    fftrc = cufftExecC2C(_fftHandle, thrust::raw_pointer_cast(&out_device[0]), thrust::raw_pointer_cast(&in_device[0]),
-                         CUFFT_INVERSE);
+    fftrc = cufftExecC2C(_fftHandle, thrust::raw_pointer_cast(&out_device[0]), thrust::raw_pointer_cast(&in_device[0]), CUFFT_INVERSE);
     if(fftrc != CUFFT_SUCCESS)
     {
         throw std::runtime_error("cufftExecC2C forward error");
