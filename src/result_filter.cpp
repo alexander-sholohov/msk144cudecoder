@@ -16,7 +16,7 @@ std::string ResultFilter::ResultItem::updateStampAsString() const
     std::time_t now_c = std::chrono::system_clock::to_time_t(update_stamp);
     std::tm now_tm = *std::localtime(&now_c);
     char buff[70];
-    strftime(buff, sizeof buff, "%m%d%H%M%S", &now_tm);
+    strftime(buff, sizeof buff, "%Y%m%d%H%M%S", &now_tm);
     return std::string(buff);
 }
 
