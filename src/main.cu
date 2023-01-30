@@ -404,9 +404,17 @@ int main(int argc, char* const argv[])
         // print agregated result
         for(auto const& elm : result_filter.getBlockResult())
         {
-            std::cout << "*** "
-                      << " snr=" << std::setw(2) << elm.snr << " f0=" << std::setw(6) << elm.f0 << " num_avg=" << elm.num_avg << " nbadsync=" << elm.nbadsync
-                      << " pattern_idx=" << elm.pattern_idx << " date=" << elm.updateStampAsString() << " msg='" << elm.message << "'" << std::endl;
+            // clang-format off
+            std::cout << "***  "
+                      << "snr=" << std::setw(2) << elm.snr << "; "
+                      << "f0=" << std::setw(6) << elm.f0 << "; "
+                      << "num_avg=" << elm.num_avg << "; "
+                      << "nbadsync=" << elm.nbadsync << "; "
+                      << "pattern_idx=" << elm.pattern_idx << "; "
+                      << "date=" << elm.updateStampAsString() << "; "
+                      << "msg='" << elm.message << "'" << "; "
+                      << std::endl;
+            // clang-format on
         }
 
         sm5.stop();
