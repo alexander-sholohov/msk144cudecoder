@@ -26,7 +26,7 @@ CUDA toolkit from https://developer.nvidia.com/cuda-downloads
 
 WSJTX repository linked as git submodule. After cloning this repository, execute the following commands:
 ```shell
-cd msk144decoder
+cd msk144cudecoder
 git submodule init
 git submodule update --progress
 ```
