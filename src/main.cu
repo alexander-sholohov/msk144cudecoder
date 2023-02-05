@@ -229,7 +229,7 @@ int main(int argc, char* const argv[])
     const auto sbBlocks = ctx.getSoftBitsBlocks();
     const auto sbThreads = ctx.getSoftBitsThreads();
 
-    std::cout << "Actual parameters:" << std::endl
+    std::cerr << "Actual parameters:" << std::endl
               << "Center Frequency: " << center_frequency_in_hz << "Hz" << std::endl
               << "Search Step: " << search_step_in_hz << "Hz" << std::endl
               << "Search Width: " << search_width_in_hz << "Hz" << std::endl
@@ -240,10 +240,10 @@ int main(int argc, char* const argv[])
 
     if(input_mode == INPUT_MODE::Real16bit)
     {
-        std::cout << "Analytic Method: " << analytic_method << std::endl;
+        std::cerr << "Analytic Method: " << analytic_method << std::endl;
     }
 
-    std::cout << "Badsync Threshold: " << ctx.getNBadSyncThreshold() << std::endl
+    std::cerr << "Badsync Threshold: " << ctx.getNBadSyncThreshold() << std::endl
               << "Scan-kernel CUDA blocks: " << blocks.x << std::endl
               << "Scan-kernel CUDA threads: " << threads.x << std::endl
               << "Softbit-kernel CUDA blocks: " << sbBlocks.x << "*" << sbBlocks.y << "=" << (sbBlocks.x * sbBlocks.y) << std::endl
@@ -397,7 +397,7 @@ int main(int argc, char* const argv[])
         const int working_loop_timeout_soft_limit_in_ms = 210;
         if(working_loop_calculation_timer.millisecondsElapsed() > working_loop_timeout_soft_limit_in_ms)
         {
-            std::cout << "Warning: Working loop takes too much time: " << working_loop_calculation_timer.millisecondsElapsed() << " ms"
+            std::cerr << "Warning: Working loop takes too much time: " << working_loop_calculation_timer.millisecondsElapsed() << " ms"
                       << " of " << working_loop_timeout_soft_limit_in_ms << " ms max." << std::endl;
         }
 
