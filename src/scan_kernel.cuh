@@ -359,7 +359,7 @@ __global__ void scan_kernel(MSK144SearchContext ctx, const Complex* __restrict__
         {
             unsigned candidate_idx = threadIdx.x;
             auto& candidate = best_candidates[candidate_idx];
-            ctx.resultKeeper().put_candidate(blockIdx.x, pattern_idx, candidate_idx, candidate.pos, candidate.xb, f0, _gpattern[pattern_idx].num_avg);
+            ctx.resultKeeper().put_candidate(blockIdx.x, pattern_idx, candidate_idx, candidate.pos, candidate.xb, -f0, _gpattern[pattern_idx].num_avg);
             // printf("put candidate thr=%d pos=%d xb=%f\n", threadIdx.x, candidate.pos, candidate.xb);
         }
 
