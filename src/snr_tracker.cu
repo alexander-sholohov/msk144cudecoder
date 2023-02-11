@@ -8,6 +8,9 @@
 #include <cassert>
 #include <cmath>
 #include <vector>
+#include <algorithm>
+#include <numeric>
+
 
 SNRTracker::SNRTracker()
     : _noise_power(0.0f)
@@ -17,43 +20,27 @@ SNRTracker::SNRTracker()
 
 void SNRTracker::process_data(const Complex* data, const unsigned length)
 {
-    // assert(data.size() >= length);
-
     const int num_elements = 8;
     std::vector<float> arr(num_elements, 0.0f);
-    const int block_size = Num6x864 / num_elements;
-    for(int idx = 0; idx < Num6x864; idx++)
+    const int block_size = length / num_elements;
+    for(int idx = 0; idx < block_size * num_elements; idx++)
     {
         auto y = conj(data[idx]) * data[idx];
 
         int pos = idx / block_size;
-        if(pos < num_elements)
-        {
-            arr[pos] += y.real();
-        }
+        arr[pos] += y.real();
     }
 
-    float summ = 0.0f;
-    for(auto& x : arr)
-    {
-        summ += x;
-    }
-    float avg = summ / num_elements;
+    const float summ = std::accumulate(arr.begin(), arr.end(), 0.0f);
+    const float avg = summ / num_elements;
 
-    float peak = 0.0f;
-    for(auto& x : arr)
-    {
-        if(peak < x)
-        {
-            peak = x;
-        }
-    }
+    const float peak = *std::max_element(arr.begin(), arr.end());
 
     if(_noise_power <= 0.0f)
     {
         _noise_power = avg; // initial
     }
-    else if(_noise_power < avg)
+    else if(avg > _noise_power)
     {
         _noise_power = 0.9f * _noise_power + 0.1f * avg; // noise level is slow to rise
     }
@@ -65,6 +52,10 @@ void SNRTracker::process_data(const Complex* data, const unsigned length)
     if(_noise_power > 0.0f)
     {
         _snr = 10.0f * std::log10(peak / _noise_power - 1.0f);
+    }
+    else
+    {
+        _snr = 0.0f;
     }
 
     if(_snr > 24.0f)
