@@ -20,34 +20,6 @@ DecodedResult::DecodedResult(std::string msg)
 {
 }
 
-DecodedResult decode_softbits(const std::vector<float>& softbits)
-{
-    const size_t softbits_size = 128;
-    if(softbits.size() != softbits_size)
-    {
-        throw std::runtime_error("softbits[] must have size of 128 elements.");
-    }
-
-    // The following code is a part of msk144decodeframe.f90
-
-    std::vector<char> apmask(128, 0);
-    int maxiterations = 10;
-    std::vector<char> message77(77);
-    char cw[128];
-    int nharderror = 0;
-    int iter = 0;
-
-    std::vector<float> llr = softbits;
-
-    fortran_bpdecode128_90(&llr[0], &apmask[0], &maxiterations, &message77[0], cw, &nharderror, &iter);
-
-    // first check for error
-    if(nharderror < 0 || nharderror >= 18)
-        return DecodedResult();
-
-    return decode_message(message77);
-}
-
 DecodedResult decode_message(const std::vector<char>& message77)
 {
     auto bits2int = [](char b2, char b1, char b0) -> int { return (b2 << 2) | (b1 << 1) | (b0); };

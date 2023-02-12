@@ -15,10 +15,6 @@ endif (NOT CMAKE_BUILD_TYPE)
 
 set(WSJT_BASE_DIR ${CMAKE_SOURCE_DIR}/../deps/wsjtx CACHE STRING "Provide path to WSJT sorurces")
 
-# Hint: Define BOOST_ROOT if boost is not in standart path
-find_package (Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIR})
-
 # project definitions
 add_definitions (-DBIGSYM=1)
 
@@ -41,23 +37,14 @@ set (wsjt_common_FSRCS
   )
 
 set (wsjt_msk144_FSRCS
-  ${WSJT_BASE_DIR}/lib/crc.f90
   ${WSJT_BASE_DIR}/lib/77bit/packjt77.f90
-  ${WSJT_BASE_DIR}/lib/bpdecode128_90.f90
-  ${WSJT_BASE_DIR}/lib/ft8/chkcrc13a.f90
   ${WSJT_BASE_DIR}/lib/chkcall.f90
-  ${WSJT_BASE_DIR}/lib/platanh.f90
-  )
-
-set (wsjt_CXXSRCS
-  ${WSJT_BASE_DIR}/lib/crc13.cpp
   )
 
 set (wsjt_msk144_CSRCS
   )
 
 add_library(bpdecode SHARED
-  ${wsjt_CXXSRCS} 
   ${wsjt_msk144_CSRCS}  
   ${wsjt_common_FSRCS} 
   ${wsjt_msk144_FSRCS} 

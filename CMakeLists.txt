@@ -32,20 +32,6 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
   set(CMAKE_CUDA_ARCHITECTURES 35 53 61)
 endif()
 
-
-# -- Boost is using only for CRC --
-if(WIN32)
-  # my setup
-  if(EXISTS "F:/boost_1_77_0")
-    set(BOOST_ROOT "F:/boost_1_77_0")
-  endif()
-endif()
-
-# Hint: Define BOOST_ROOT if boost is not in standart path
-find_package (Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIR})
-
-
 if(WIN32)
   include_directories(${CMAKE_SOURCE_DIR}/ext/getopt-for-windows)
 endif()
@@ -85,17 +71,10 @@ set (wsjt_common_FSRCS
   )
 
 set (wsjt_msk144_FSRCS
-  ${WSJT_BASE_DIR}/lib/crc.f90
   ${WSJT_BASE_DIR}/lib/77bit/packjt77.f90
-  ${WSJT_BASE_DIR}/lib/bpdecode128_90.f90
-  ${WSJT_BASE_DIR}/lib/ft8/chkcrc13a.f90
   ${WSJT_BASE_DIR}/lib/chkcall.f90
-  ${WSJT_BASE_DIR}/lib/platanh.f90
   )
 
-set (wsjt_CXXSRCS
-  ${WSJT_BASE_DIR}/lib/crc13.cpp
-  )
 
 set (wsjt_msk144_CSRCS
   )
@@ -103,7 +82,6 @@ set (wsjt_msk144_CSRCS
 
 if(NOT WIN32)  
   set(PBDECODE_FILES   
-    ${wsjt_CXXSRCS} 
     ${wsjt_msk144_CSRCS}  
     ${wsjt_common_FSRCS} 
     ${wsjt_msk144_FSRCS} 
