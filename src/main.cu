@@ -16,6 +16,7 @@
 #include "analytic2.cuh"
 #include "softbits_kernel.cuh"
 #include "ldpc_kernel.cuh"
+#include "index_kernel.cuh"
 
 #include "decode_softbits.h"
 #include "f_interop.h"
@@ -461,10 +462,8 @@ void do_decode(MSK144SearchContext& ctx, const Complex* device_input_data, Resul
 
     scan_kernel<<<blocks, threads>>>(ctx, device_input_data);
     softbits_kernel<<<sbBlocks, sbThreads>>>(ctx, device_input_data);
-
-    ctx.resultKeeper().filter_candidates();
-    const auto ldpcBlocks = ctx.resultKeeper().getFilteredCandidatesBlocks();
-
+    index_kernel<<<1, NumIndexThreads>>>(ctx);
+    const auto ldpcBlocks = ctx.resultKeeper().getIndexedCandidatesBlocks();
     ldpc_kernel<<<ldpcBlocks, 128>>>(ctx);
     if(cudaDeviceSynchronize() != cudaSuccess)
     {

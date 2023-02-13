@@ -42,4 +42,6 @@ constexpr unsigned NumPatternBitsToScan = 6; // from 1 to FixedNumBitsInPattern.
 
 constexpr unsigned NumSoftbitsThreads = 160;
 
+constexpr unsigned NumIndexThreads = 64;
+
 constexpr float SampleRate = 12000.0f;

@@ -101,6 +101,7 @@ add_executable (msk144cudecoder
   src/analytic_fft.cu
   src/ldpc_kernel.cuh
   src/ldpc_context.cuh
+  src/index_kernel.cuh
   src/analytic2.cuh
   src/decode_softbits.h
   src/decode_softbits.cpp
