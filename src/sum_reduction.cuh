@@ -3,7 +3,7 @@
 //
 // Author: Alexander Sholokhov <ra9yer@yahoo.com>
 //
-// License: MIT
+// License: GPLv3
 //
 
 // This function gathers values from all threads and calculates summ of them.

@@ -1,7 +1,7 @@
 //
 // Author: Alexander Sholokhov <ra9yer@yahoo.com>
 //
-// License: MIT
+// License: GPLv3
 //
 
 #include "cuda_runtime.h"

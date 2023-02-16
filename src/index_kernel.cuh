@@ -1,7 +1,7 @@
 //
 // Author: Alexander Sholokhov <ra9yer@yahoo.com>
 //
-// License: MIT
+// License: GPLv3
 //
 
 __global__ void index_kernel(MSK144SearchContext ctx)
