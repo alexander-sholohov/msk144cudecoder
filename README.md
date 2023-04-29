@@ -73,7 +73,7 @@ rtl_sdr -s 1920000 -f 144361500 -g 20 - | csdr convert_u8_f  | csdr fir_decimate
 
 
 Links:  
-- [WSJT-X Software by Joe K1JT](https://physics.princeton.edu/pulsar/k1jt/wsjtx.html)
+- [WSJT-X Software by Joe K1JT](https://wsjt.sourceforge.io)
 - [WSJT Git Repository at sourceforge](https://sourceforge.net/p/wsjt/wsjtx/ci/master/tree/)
 - [WSJT CPU based MSK144/JT65/Q65 console decoder](https://github.com/alexander-sholohov/msk144decoder/)
 - [CSDR Project](https://github.com/ha7ilm/csdr/)
