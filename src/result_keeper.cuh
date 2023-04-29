@@ -131,7 +131,7 @@ public:
 
     __device__ const float* get_softbits_by_filtered_index(unsigned blk_id) const
     {
-        const int* index_buf = thrust::raw_pointer_cast(_number_of_indexed_candidates);
+        const int* index_buf = thrust::raw_pointer_cast(_indexes);
         ResultItem* items_buf = thrust::raw_pointer_cast(_result_items);
         ResultItem& item = items_buf[index_buf[blk_id]];
         return item.softbits_wo_sync;
@@ -139,9 +139,9 @@ public:
 
     __device__ void put_ldpc_decode_result(unsigned blk_id, const char* message, int num_iterations, int num_hard_errors)
     {
-        const int* index_buf = thrust::raw_pointer_cast(_number_of_indexed_candidates);
+        const int* index_buf = thrust::raw_pointer_cast(_indexes);
         ResultItem* items_buf = thrust::raw_pointer_cast(_result_items);
-        ResultItem& item = items_buf[blk_id];
+        ResultItem& item = items_buf[index_buf[blk_id]];
         item.is_message_present = true;
         item.ldpc_num_iterations = num_iterations;
         item.ldpc_num_hard_errors = num_hard_errors;
