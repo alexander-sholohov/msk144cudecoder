@@ -56,9 +56,9 @@ Optimal scan. Minimum resources usage. Scan in width of 100Hz, up to 3 frames av
 ./msk144cudecoder --search-width=100 --scan-depth=3
 ```
 
-Deep scan. More resources usage. Scan in width of 300Hz, up to 6 frames average, try to decode frames with unlikely sync pattern.
+Deep scan. More resources usage. Scan in width of 500Hz, up to 6 frames average, try to decode frames with unlikely sync pattern.
 ```shell
-./msk144cudecoder --search-width=300 --scan-depth=6 --nbadsync-threshold=3 
+./msk144cudecoder --search-width=500 --scan-depth=6 --nbadsync-threshold=3 
 ```
 
 Decode provided sample wav file.
