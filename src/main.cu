@@ -128,7 +128,7 @@ int main(int argc, char* const argv[])
 
     float search_step_in_hz = 2.0f;    // 2Hz is optimal.
     float search_width_in_hz = 200.0f; // 200Hz width is +-100Hz of center frequency.
-    int scan_depth = 3;                // the more level the more blocks will be averaged
+    int scan_depth = 4;                // the more level the more blocks will be averaged
     int analytic_method = 2;
     int nbadsync_threshold = 1; // max reasonable value = 4
 
