@@ -19,7 +19,6 @@ Prereqirements:
 sudo apt-get install build-essential
 sudo apt-get install cmake
 sudo apt-get install gfortran
-sudo apt-get install libboost-dev
 
 ```
 CUDA toolkit from https://developer.nvidia.com/cuda-downloads
