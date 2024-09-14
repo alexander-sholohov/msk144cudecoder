@@ -34,13 +34,18 @@ Commands to build:
 ```shell
 mkdir _build
 cd _build
-cmake '-DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.6/bin/nvcc' -DCMAKE_CUDA_FLAGS='--gpu-architecture=native' ..
+cmake ..
 cmake --build . 
 ```
 
-You need to specify `CMAKE_CUDA_COMPILER` as the path to `nvcc` on your system. Specifying `CMAKE_CUDA_FLAGS` is optional. By specifying it as shown in the example above, it ensures that the compiled CUDA code can run on the GPU in the machine you compile this on.
-
 Executable file *msk144cudecoder* will appear in the current directory.
+
+In some cases you may want to invoke `cmake` as
+```shell
+cmake '-DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.6/bin/nvcc' -DCMAKE_CUDA_FLAGS='--gpu-architecture=native' ..
+```
+Here we specify `CMAKE_CUDA_COMPILER` as the path to `nvcc` on your system. Specifying `CMAKE_CUDA_FLAGS` is optional. By specifying it as shown in the example above, it ensures that the compiled CUDA code can run on the GPU in the machine you compile this on. 
+
 
 To run this program on Windows you will need bpdecode.dll. How to build it see ./win32bpdecode/readme.txt
 
